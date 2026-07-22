@@ -4,7 +4,7 @@ from src.configs.agent_config import AgentConfig
 from src.configs import env_config 
 from contextlib import asynccontextmanager
 @asynccontextmanager
-def lifespan(app:FastAPI):
+async def lifespan(app:FastAPI):
     config_agent = AgentConfig(
         api_key= env_config.api_key,
         base_url=env_config.base_url,
@@ -18,6 +18,6 @@ def lifespan(app:FastAPI):
     print("Apllication closed successfully")
 
 
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 
 app.include_router(ChatRouter)

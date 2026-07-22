@@ -5,6 +5,7 @@ router = APIRouter(prefix="/api")
 
 @router.post("/chat")
 async def chat(request:Request,chatData:data):
-    agent_config = request.state.agent_config
-    return await chat_controller(agent_config,chat_data=chatData)
+    agent_config = request.app.state.agent_config
+    print(chatData)
+    return await chat_controller(agent_config=agent_config,chat_data=chatData)
 

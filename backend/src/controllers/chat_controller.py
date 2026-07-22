@@ -1,6 +1,9 @@
 from agents import Runner,Agent
 from src.models.pydantic_model import data
-async def chat_controller(chat_data:data,agent_config):
+from src.agents.content_agent import content_agent
+
+async def chat_controller(chat_data:data,agent_config,):
+    json_data = chat_data.model_dump_json()
     orchistrator_agent = Agent(
         name="orchistrator agent",
         instructions="""
@@ -25,15 +28,19 @@ async def chat_controller(chat_data:data,agent_config):
         - Registration ID
         - Questions
         - Language
-        - Additional Instructions
 
         Never generate academic content.
 
         If anything is missing, ask the user.
 
         When everything is complete, handoff to the Content Agent.
-        """
+        """,
+        handoffs=[content_agent]
     )
     result = await Runner.run(
-        input=chat_data
+        input=json_data,
+        starting_agent=orchistrator_agent,
+        run_config=agent_config.config()
     )
+    print(result.final_output)
+    return {"message":"success"}
