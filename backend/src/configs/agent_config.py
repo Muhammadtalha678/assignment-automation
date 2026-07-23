@@ -21,5 +21,5 @@ class AgentConfig:
         return RunConfig(
             model=self.model(),
             model_provider=self.client(),
-            tracing_disabled=True
+            # tracing_disabled=True
         )
