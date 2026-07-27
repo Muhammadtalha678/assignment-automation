@@ -22,4 +22,5 @@ class AgentConfig:
             model=self.model(),
             model_provider=self.client(),
             # tracing_disabled=True
+            
         )
