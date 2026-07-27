@@ -55,11 +55,18 @@ async def chat_controller(chat_data:data,agent_config,):
     else:
         dict_content = agent_raw_output
 
-    dict_content = dict_content.model_dump()
+    if hasattr(dict_content, "model_dump"):
+        data = dict_content.model_dump()
+    elif hasattr(dict_content, "dict"):
+        data = dict_content.dict()
+    else:
+        data = dict_content
+
+    # dict_content = dict_content.model_dump()
     output_filename = f"Assignment_{chat_data.assignment_no}_{chat_data.student_name}.docx"
 
     generate_assignment_docx(
-        json_data_str=dict_content,
+        json_data_str=data,
         output_path=output_filename,
         logo_path="assets/aiou_logo.jpg"
     )
