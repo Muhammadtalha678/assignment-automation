@@ -9,7 +9,12 @@ class data(BaseModel):
     questions:list[str]
     language:str
 
-
+class Diagram(BaseModel):
+    title: str
+    diagram_type: str
+    layout: str
+    nodes: list[str]
+    connections: list[list[str]]
 
 class Section(BaseModel):
     heading:str
@@ -20,7 +25,7 @@ class Question(BaseModel):
     question_text:str
     introduction:str
     sections:list[Section]
-    diagram_description:str
+    diagram:Diagram
     conclusion:str
     
 class Assignment(BaseModel):

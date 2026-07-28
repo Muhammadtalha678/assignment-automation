@@ -8,6 +8,7 @@ from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.oxml import OxmlElement, parse_xml
 from docx.oxml.ns import nsdecls, qn
 
+from src.controllers.graphviz_diagram import generate_graphviz_diagram
 from src.controllers.generate_image import generate_image
 
 def set_cell_margins(cell, top=100, bottom=100, left=150, right=150):
@@ -32,8 +33,9 @@ def generate_assignment_docx(json_data_str: str, output_path: str = "Assignment.
     questions = data.get("questions", [])
 
     # 2. Setup Images Directory at Project Root
-    image_dir = os.path.join(os.getcwd(), "quest_images")
-    os.makedirs(image_dir, exist_ok=True)
+    # image_dir = os.path.join(os.getcwd(), "quest_images")
+    # os.makedirs(image_dir, exist_ok=True)
+    file_path = None
 
     # -------------------------------------------------------------------------
     # PHASE 1: PRE-GENERATE ALL IMAGES
@@ -42,16 +44,22 @@ def generate_assignment_docx(json_data_str: str, output_path: str = "Assignment.
     image_map = {}  # { q_index: file_path }
 
     for idx, q in enumerate(questions, start=1):
-        diagram_desc = q.get("diagram_description")
-        if diagram_desc:
-            temp_file_path = os.path.join(image_dir, f"temp_{idx}.png")
-            print(f"Generating image {idx}/{len(questions)}: temp_{idx}.png")
+        diagram = q.get("diagram")
+        if diagram:
+            # temp_file_path = os.path.join(image_dir, f"temp_{idx}.png")
+        #     print(f"Generating image {idx}/{len(questions)}: temp_{idx}.png")
             
-            success = generate_image(diagram_desc, temp_file_path)
-            if success:
-                image_map[idx] = temp_file_path
+        #     success = generate_image(diagram_desc, temp_file_path)
+        #     if success:
+        #         image_map[idx] = temp_file_path
+        #     else:
+        #         image_map[idx] = None
+            
+            file_path = generate_graphviz_diagram(diagram=diagram,idx=idx)
+            if file_path:
+                    image_map[idx] = file_path
             else:
-                image_map[idx] = None
+                    image_map[idx] = None
     print(image_map)
     # 2. Initialize Document
     doc = Document()
@@ -245,7 +253,7 @@ def generate_assignment_docx(json_data_str: str, output_path: str = "Assignment.
     doc.save(output_path)
     print("--> Phase 3: Cleaning up temporary images...")
     try:
-        shutil.rmtree(image_dir)  # Puray folder ko uski files samet delete kar dega
+        shutil.rmtree(file_path)  # Puray folder ko uski files samet delete kar dega
         print("Cleanup complete. 'quest_images' folder removed.")
     except Exception as e:
         print(f"Warning: Could not clear image directory: {e}")

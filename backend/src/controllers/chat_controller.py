@@ -70,10 +70,10 @@ async def chat_controller(chat_data:data,agent_config,):
         output_path=output_filename,
         logo_path="assets/aiou_logo.jpg"
     )
-    # print(type(dict_content))
+    print(type(dict_content))
     return {
         "status": "success",
-        # "dict_content": dict_content,
+        # "dict_content": data,
         "file_name": output_filename,
         "message": "Assignment Word document generated successfully!"
     }
