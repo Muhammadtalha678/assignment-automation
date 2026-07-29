@@ -4,10 +4,11 @@ import shutil
 from docx import Document
 from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.enum.table import WD_TABLE_ALIGNMENT
+from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT, WD_TABLE_ALIGNMENT
 from docx.oxml import OxmlElement, parse_xml
 from docx.oxml.ns import nsdecls, qn
 
+from src.helper.helper_functions import add_page_border,set_table_borders
 from src.controllers.graphviz_diagram import generate_graphviz_diagram
 from src.controllers.generate_image import generate_image
 
@@ -35,7 +36,6 @@ def generate_assignment_docx(json_data_str: str, output_path: str = "Assignment.
     # 2. Setup Images Directory at Project Root
     # image_dir = os.path.join(os.getcwd(), "quest_images")
     # os.makedirs(image_dir, exist_ok=True)
-    file_path = None
 
     # -------------------------------------------------------------------------
     # PHASE 1: PRE-GENERATE ALL IMAGES
@@ -63,6 +63,7 @@ def generate_assignment_docx(json_data_str: str, output_path: str = "Assignment.
     print(image_map)
     # 2. Initialize Document
     doc = Document()
+    add_page_border(doc)
 
     # Set Document Page Margins (Normal 1 inch)
     for section in doc.sections:
@@ -95,9 +96,12 @@ def generate_assignment_docx(json_data_str: str, output_path: str = "Assignment.
     # STUDENT DETAILS TABLE
     # -------------------------------------------------------------
     table = doc.add_table(rows=4, cols=2)
+    table.style = "Table Grid"
+
+    set_table_borders(table)
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
     table.autofit = False
-
+    # table.autofit = False
     details = [
         ("Student Name:", str(data.get("student_name", ""))),
         ("Registration ID:", str(data.get("registration_id", ""))),
@@ -118,6 +122,9 @@ def generate_assignment_docx(json_data_str: str, output_path: str = "Assignment.
         run_lbl.font.size = Pt(11)
         run_lbl.font.bold = True
 
+        p_lbl.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        cell_lbl.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
+
         # Value Cell
         cell_val = row.cells[1]
         cell_val.width = Inches(4.3)
@@ -126,6 +133,9 @@ def generate_assignment_docx(json_data_str: str, output_path: str = "Assignment.
         run_val = p_val.add_run(val)
         run_val.font.name = 'Calibri'
         run_val.font.size = Pt(11)
+
+        p_val.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        cell_val.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
 
         set_cell_margins(cell_lbl, top=80, bottom=80, left=100, right=100)
         set_cell_margins(cell_val, top=80, bottom=80, left=100, right=100)
@@ -220,7 +230,7 @@ def generate_assignment_docx(json_data_str: str, output_path: str = "Assignment.
             p_img.paragraph_format.space_before = Pt(10)
             
             run_img = p_img.add_run()
-            run_img.add_picture(img_path, width=Inches(4.8))
+            run_img.add_picture(img_path, width=Inches(5.4),height=Inches(3.0))
 
             # # Caption
             # p_cap = doc.add_paragraph()
@@ -253,7 +263,7 @@ def generate_assignment_docx(json_data_str: str, output_path: str = "Assignment.
     doc.save(output_path)
     print("--> Phase 3: Cleaning up temporary images...")
     try:
-        shutil.rmtree(file_path)  # Puray folder ko uski files samet delete kar dega
+        shutil.rmtree("diagrams",ignore_errors=True)  # Puray folder ko uski files samet delete kar dega
         print("Cleanup complete. 'quest_images' folder removed.")
     except Exception as e:
         print(f"Warning: Could not clear image directory: {e}")

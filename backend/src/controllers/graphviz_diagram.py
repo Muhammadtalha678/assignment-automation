@@ -67,27 +67,51 @@ def generate_graphviz_diagram(idx:int, diagram: dict , output_dir="diagrams"):
 
     graph.attr(rankdir=diagram.get("layout", "TB"))
 
+    # graph.attr(
+    #     bgcolor="white",
+    #     dpi="300"
+    # )
     graph.attr(
         bgcolor="white",
-        dpi="300"
-    )
+        dpi="300",
+        splines="ortho",
+        ranksep="0.7",
+        nodesep="0.45",
+        pad="0.3"
+        )
 
+    # graph.attr(
+    #     "node",
+    #     shape="box",
+    #     style="rounded,filled",
+    #     fillcolor="#EAF3FF",
+    #     color="#2F5597",
+    #     fontname="Arial",
+    #     fontsize="12",
+    #     margin="0.2"
+    # )
     graph.attr(
         "node",
         shape="box",
         style="rounded,filled",
-        fillcolor="#EAF3FF",
-        color="#2F5597",
-        fontname="Arial",
-        fontsize="12",
-        margin="0.2"
-    )
-
+        fillcolor="white",
+        color="black",
+        penwidth="1.5",
+        fontname="Calibri",
+        fontsize="11",
+        margin="0.18"
+       )
+    # graph.attr(
+    #     "edge",
+    #     color="black",
+    #     arrowsize="0.8"
+    # )
     graph.attr(
         "edge",
         color="black",
-        arrowsize="0.8"
-    )
+        penwidth="1.2",
+        arrowsize="0.7"
+        )
 
     for node in diagram["nodes"]:
         graph.node(node)
