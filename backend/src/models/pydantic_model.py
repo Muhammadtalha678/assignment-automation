@@ -25,7 +25,8 @@ class Question(BaseModel):
     question_text:str
     introduction:str
     sections:list[Section]
-    diagram:Diagram
+    # diagram:Diagram
+    diagram_prompt:str
     conclusion:str
     
 class Assignment(BaseModel):
