@@ -143,7 +143,7 @@ import asyncio
 from playwright.async_api import async_playwright
 from playwright_stealth import Stealth
 import json
-async def generate_image_via_advanced_web(prompt, idx,json_data_str:str):
+async def generate_image_via_advanced_web(json_data_str:str):
     # print(prompt)
     if isinstance(json_data_str, str):
         data = json.loads(json_data_str)
@@ -152,7 +152,9 @@ async def generate_image_via_advanced_web(prompt, idx,json_data_str:str):
 
     output_dir = "diagrams"
     os.makedirs(output_dir, exist_ok=True)
-    
+
+    questions = data.get("questions",[])
+    image_map = {}
     # # Background Chrome instances clear tracking
     try:
         os.system("taskkill /f /im chrome.exe")
@@ -177,89 +179,94 @@ async def generate_image_via_advanced_web(prompt, idx,json_data_str:str):
         
         page = await context.new_page()
         await Stealth().apply_stealth_async(page)
-        
-        print("Google AI Studio open ho raha hai...")
-        await page.goto("https://gemini.google.com", wait_until="domcontentloaded")
-        await asyncio.sleep(6)
+        for (idx,question) in enumerate(questions,start=1):
+            prompt = question.get("diagram_prompt")
 
-        print("Locating chat text field area...")
-        chat_box = page.locator("div[contenteditable='true'], div[aria-label*='Prompt'],textarea").first
-        await chat_box.click()
-        await asyncio.sleep(1)
+            print("Google AI Studio open ho raha hai...")
+            await page.goto("https://gemini.google.com", wait_until="domcontentloaded")
+            await asyncio.sleep(6)
 
-        # # OPTIONAL: Safe reset configuration for Temporary Chats if needed
-        # # Uses force=True to bypass the aria-disabled restriction enforced by the UI
-        # try:
-        #     clear_btn = page.locator("button[aria-label*='New chat'], button[data-test-clear='outside']").first
-        #     if await clear_btn.count() > 0:
-        #         print("Forcing chat state refreshment...")
-        #         await clear_btn.click(force=True)
-        #         await asyncio.sleep(2)
-        # except Exception as e:
-        #     print(f"[INFO] Skipped interface clearing sequence: {e}")
-
-        # print("Locating exact prompt field...")
-        # prompt_box = page.locator("div[contenteditable='true'], text-area-element div, textarea").first
-        # await prompt_box.scroll_into_view_if_needed()
-        # await prompt_box.click()
-        # await asyncio.sleep(1)
-        
-        print("Typing prompt string...")
-        # Thoda sa delay badha rahe hain taaki human rhythm lage
-        await page.keyboard.type(prompt, delay=35) 
-        await asyncio.sleep(2)
-        
-        # print("Executing Run sequence (Simulating Human Action)...")
-        
-        # # 1. Sab se pehle exact 'Run' button dhoondhein
-        # # Google AI Studio ka asli submit button aksar 'Run' text ya 'Ctrl+Enter' tooltip ke sath hota hai
-        # run_button = page.locator("button:has-text('Run'), button[aria-label*='Run'], button:has-text('Ctrl')").first
-        
-        print("Submitting prompt query...")
-        # submit button dhndo
-        submit_btn = page.locator("button[aria-label*='Send'], button.send-button, mat-icon:has-text('send')").first
-        if await submit_btn.count() > 0 and await submit_btn.is_visible():
-            print("Visible Run button mil gaya! Simulating human mouse cursor move...")
-            # Direct click karne ki jagah mouse ko button par hover karwayein (anti-bot bypass karne ke liye)
-            await submit_btn.hover()
+            print("Locating chat text field area...")
+            chat_box = page.locator("div[contenteditable='true'], div[aria-label*='Prompt'],textarea").first
+            await chat_box.click()
             await asyncio.sleep(1)
-            # Human click behavior invoke karein
-            await submit_btn.click()
-        else:
-            # print("Direct button control nahi mila. Executing Safe Sequential Keystrokes...")
-            # Agar button na mile toh Ctrl+Enter ko achanak dabane ki jagah button states ke mutabiq chalayein
-            # await page.keyboard.down("Control")
-            # await asyncio.sleep(0.5)  # 500ms ka gap taaki bot behavior na lage
-            await page.keyboard.press("Enter")
-            # await asyncio.sleep(0.2)
-            # await page.keyboard.up("Control")
+
+            # # OPTIONAL: Safe reset configuration for Temporary Chats if needed
+            # # Uses force=True to bypass the aria-disabled restriction enforced by the UI
+            # try:
+            #     clear_btn = page.locator("button[aria-label*='New chat'], button[data-test-clear='outside']").first
+            #     if await clear_btn.count() > 0:
+            #         print("Forcing chat state refreshment...")
+            #         await clear_btn.click(force=True)
+            #         await asyncio.sleep(2)
+            # except Exception as e:
+            #     print(f"[INFO] Skipped interface clearing sequence: {e}")
+
+            # print("Locating exact prompt field...")
+            # prompt_box = page.locator("div[contenteditable='true'], text-area-element div, textarea").first
+            # await prompt_box.scroll_into_view_if_needed()
+            # await prompt_box.click()
+            # await asyncio.sleep(1)
         
-        print("Generation initiated. Monitoring DOM execution layout (40 seconds wait)...")
-        await asyncio.sleep(40)
+            print("Typing prompt string...")
+            # Thoda sa delay badha rahe hain taaki human rhythm lage
+            await page.keyboard.type(prompt, delay=35) 
+            await asyncio.sleep(2)
         
-         # Generated image target structure catch karna
-        image_node = page.locator(
-            "mat-card img[src*='googleusercontent'],"
-            "div.conversation-container img[src*='googleusercontent'],"
-            "img[alt*='Generated Image'],"
-            "message-content img").last
-        
-        if await image_node.count() > 0:
-            print("Successfully verified generated image element on canvas window!")
-            file_path = os.path.abspath(os.path.join(output_dir, f"temp_{idx}.png"))
+            # print("Executing Run sequence (Simulating Human Action)...")
             
-            # Direct target clear snapshot capture
-            await image_node.screenshot(path=file_path)
-            print(f"\n[SUCCESS] Original High-Res Asset Saved via Playwright: {file_path}")
-        else:
-            print("\n[INFO] Saving broader chat canvas window layout...")
-            file_path = os.path.abspath(os.path.join(output_dir, f"fallback_canvas_{idx}.png"))
-            await page.screenshot(path=file_path)
-            print(f"[SUCCESS] Viewport screen extracted to: {file_path}")
+            # # 1. Sab se pehle exact 'Run' button dhoondhein
+            # # Google AI Studio ka asli submit button aksar 'Run' text ya 'Ctrl+Enter' tooltip ke sath hota hai
+            # run_button = page.locator("button:has-text('Run'), button[aria-label*='Run'], button:has-text('Ctrl')").first
+        
+            print("Submitting prompt query...")
+            # submit button dhndo
+            submit_btn = page.locator("button[aria-label*='Send'], button.send-button, mat-icon:has-text('send')").first
+            if await submit_btn.count() > 0 and await submit_btn.is_visible():
+                print("Visible Run button mil gaya! Simulating human mouse cursor move...")
+                # Direct click karne ki jagah mouse ko button par hover karwayein (anti-bot bypass karne ke liye)
+                await submit_btn.hover()
+                await asyncio.sleep(1)
+                # Human click behavior invoke karein
+                await submit_btn.click()
+            else:
+                # print("Direct button control nahi mila. Executing Safe Sequential Keystrokes...")
+                # Agar button na mile toh Ctrl+Enter ko achanak dabane ki jagah button states ke mutabiq chalayein
+                # await page.keyboard.down("Control")
+                # await asyncio.sleep(0.5)  # 500ms ka gap taaki bot behavior na lage
+                await page.keyboard.press("Enter")
+                # await asyncio.sleep(0.2)
+                # await page.keyboard.up("Control")
+            
+            print("Generation initiated. Monitoring DOM execution layout (40 seconds wait)...")
+            await asyncio.sleep(40)
+            
+            # Generated image target structure catch karna
+            image_node = page.locator(
+                "mat-card img[src*='googleusercontent'],"
+                "div.conversation-container img[src*='googleusercontent'],"
+                "img[alt*='Generated Image'],"
+                "message-content img").last
+            
+            if await image_node.count() > 0:
+                print("Successfully verified generated image element on canvas window!")
+                file_path = os.path.abspath(os.path.join(output_dir, f"temp_{idx}.png"))
+                
+                # Direct target clear snapshot capture
+                await page.locator("body").click(position={"x":5,"y":5})
+                await asyncio.sleep(0.5)
+                await image_node.screenshot(path=file_path)
+                print(f"\n[SUCCESS] Original High-Res Asset Saved via Playwright: {file_path}")
+                image_map[idx] = file_path
+            else:
+                print("\n[INFO] Saving broader chat canvas window layout...")
+                file_path = os.path.abspath(os.path.join(output_dir, f"fallback_canvas_{idx}.png"))
+                await page.screenshot(path=file_path)
+                print(f"[SUCCESS] Viewport screen extracted to: {file_path}")
                 
         await context.close()
-
-        return file_path 
+        print(image_map)
+        return image_map 
 
 # async def main():
 #     prompt_text = (

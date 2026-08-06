@@ -59,7 +59,7 @@ Structure per Question:
 3. Diagram Prompt:
    - MUST write a highly descriptive prompt for an AI Image Generator to create a clean, professional, 2D vector flowchart or educational diagram.
    - Example prompt format: "A clean, minimal, 2D vector educational flowchart diagram on a solid white background illustrating [Topic]. Horizontal flow with 4 rounded boxes containing short text: 'Step 1' -> 'Step 2' -> 'Step 3' -> 'Step 4'. Minimalist design, dark text, sharp arrows, high clarity, no 3D rendering."
-4. Conclusion: Write 1 detailed paragraph summarizing key arguments and future implications.
+4. Conclusion: Strictly Write 1 detailed paragraph summarizing key arguments and future implications.
 
 Strict Negative Constraints:
 - Do NOT write superficial, 1-sentence summaries under headings.
