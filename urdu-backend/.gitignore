@@ -10,3 +10,5 @@ wheels/
 .venv
 .env
 hugging_face.py
+word_to_pdf.py
+j.py

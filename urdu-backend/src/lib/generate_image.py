@@ -31,7 +31,10 @@ async def generate_image_via_advanced_web(json_data_str:str):
             headless=False,
             channel="chrome",
             args=[
-                f"--profile-directory=Profile 4", 
+                f"--profile-directory=Profile 4", #nasreen pro 
+                # f"--profile-directory=Profile 1", #talhafiroz
+                # f"--profile-directory=Profile 11", #ferzouddingtalha
+                # f"--profile-directory=Profile 16", #quotex
                 "--no-first-run",
                 "--disable-blink-features=AutomationControlled"
             ]
@@ -70,7 +73,7 @@ async def generate_image_via_advanced_web(json_data_str:str):
                 await page.keyboard.press("Enter")
             
             print("Generation initiated. Monitoring DOM execution layout (40 seconds wait)...")
-            await asyncio.sleep(40)
+            await asyncio.sleep(80)
             
             # Generated image target structure catch karna
             image_node = page.locator(
