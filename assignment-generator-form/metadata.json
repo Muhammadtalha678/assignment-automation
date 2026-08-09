@@ -1,0 +1,6 @@
+{
+  "name": "Assignment Generator Form",
+  "description": "Language-aware assignment cover generator with strict validation and binary file download.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

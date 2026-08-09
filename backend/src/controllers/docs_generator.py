@@ -234,8 +234,14 @@ async def generate_assignment_docx(image_map:str,json_data_str: str, output_path
     doc.save(output_path)
     print("--> Phase 3: Cleaning up temporary images...")
     try:
-        shutil.rmtree("diagrams",ignore_errors=True)  # Puray folder ko uski files samet delete kar dega
-        print("Cleanup complete. 'quest_images' folder removed.")
+
+        if os.path.exists(logo_path):
+            os.remove(logo_path)
+            print(f"Deleted Logo Path: {logo_path}")
+        for image_path in image_map.values():
+            if image_path and os.path.exists(image_path):
+                os.remove(image_path)
+            print(f"Deleted Diagrams Path: {image_path}")
     except Exception as e:
         print(f"Warning: Could not clear image directory: {e}")
     return output_path

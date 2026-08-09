@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-
+from typing import Optional
 class data(BaseModel):
     assignment_no:int
     course_code:int
@@ -8,6 +8,7 @@ class data(BaseModel):
     registration_id:str
     questions:list[str]
     language:str
+    logo_path:Optional[str] = None #bd ma hm add krain gy path is liye optional none
 
 class Diagram(BaseModel):
     title: str

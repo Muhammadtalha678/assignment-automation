@@ -1,4 +1,4 @@
-import base64
+import uuid
 import os
 import requests
 import urllib.parse
@@ -172,6 +172,7 @@ async def generate_image_via_advanced_web(json_data_str:str):
             channel="chrome",
             args=[
                 f"--profile-directory=Profile 4", 
+                # f"--profile-directory=Profile 1", 
                 "--no-first-run",
                 "--disable-blink-features=AutomationControlled"
             ]
@@ -250,7 +251,7 @@ async def generate_image_via_advanced_web(json_data_str:str):
             
             if await image_node.count() > 0:
                 print("Successfully verified generated image element on canvas window!")
-                file_path = os.path.abspath(os.path.join(output_dir, f"temp_{idx}.png"))
+                file_path = os.path.abspath(os.path.join(output_dir, f"temp_{uuid.uuid4()}_{idx}.png"))
                 
                 # Direct target clear snapshot capture
                 await page.locator("body").click(position={"x":5,"y":5})
@@ -260,9 +261,10 @@ async def generate_image_via_advanced_web(json_data_str:str):
                 image_map[idx] = file_path
             else:
                 print("\n[INFO] Saving broader chat canvas window layout...")
-                file_path = os.path.abspath(os.path.join(output_dir, f"fallback_canvas_{idx}.png"))
+                file_path = os.path.abspath(os.path.join(output_dir, f"fallback_canvas_{uuid.uuid4()}_{idx}.png"))
                 await page.screenshot(path=file_path)
                 print(f"[SUCCESS] Viewport screen extracted to: {file_path}")
+                image_map[idx] = file_path
                 
         await context.close()
         print(image_map)

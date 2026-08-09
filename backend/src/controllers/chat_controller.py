@@ -1,5 +1,9 @@
+from fastapi import BackgroundTasks, HTTPException
+
 from j import f
+import os
 import json
+from fastapi.responses import FileResponse
 from agents import Runner,Agent,set_tracing_export_api_key
 from src.controllers.docs_generator import generate_assignment_docx
 from src.models.pydantic_model import data
@@ -7,10 +11,21 @@ from src.agents.content_agent import content_agent
 from src.configs.env_config import OPENAI_API_KEY
 from src.controllers.generate_image import generate_image, generate_image_via_advanced_web
 
-async def chat_controller(chat_data:data,agent_config,):
+# --- Temporary File Cleanup Function ---
+def remove_temp_file(file_path: str):
+    try:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            print(f"[CLEANUP] Generated docx deleted successfully from server: {file_path}")
+    except Exception as e:
+        print(f"[ERROR] Failed to delete temp file: {e}")
+
+async def chat_controller(chat_data:data,backgroundTask:BackgroundTasks,agent_config):
     set_tracing_export_api_key(OPENAI_API_KEY)
 
-    json_data = chat_data.model_dump_json()
+    # remove logo_path and convert to str
+    json_data = chat_data.model_dump_json(exclude={"logo_path"})
+    print("send json data to agent",json_data)
     orchistrator_agent = Agent(
         name="orchistrator agent",
         instructions="""
@@ -85,18 +100,29 @@ async def chat_controller(chat_data:data,agent_config,):
     #     5: r"D:\AIOU\assignment-automation\backend\diagrams\temp_5.png",
     #     }
 
-    await generate_assignment_docx(
+    output_path = await generate_assignment_docx(
         json_data_str=data,
         image_map=image_map,
         output_path=output_filename,
-        logo_path="assets/aiou_logo.jpg"
+        logo_path=chat_data.logo_path
     )
+
+    if not os.path.exists(output_path):
+        raise HTTPException(status_code=500, detail="Failed to generate the word document")
+         
     # questions = data.get("questions", [])
     # print(questions)
-    return {
-        "status": "success",
-        "dict_content": data,
-        # "file_name": output_filename,
-        "message": "Assignment Word document generated successfully!"
-    }
+    # return {
+    #     "status": "success",
+    #     "dict_content": data,
+    #     # "file_name": output_filename,
+    #     "message": "Assignment Word document generated successfully!"
+    # }
+    backgroundTask.add_task(remove_temp_file,file_path=output_path)
+    return FileResponse(
+        path=output_path,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        filename=output_filename
+    )
+        
 

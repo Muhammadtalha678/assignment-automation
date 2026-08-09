@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from src.routers.chat_route import router as ChatRouter
 from src.configs.agent_config import AgentConfig
 from src.configs import env_config 
@@ -19,5 +20,12 @@ async def lifespan(app:FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins for development testing
+    allow_credentials=True,
+    # allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"], 
+    allow_headers=["*"],
+)
 app.include_router(ChatRouter)

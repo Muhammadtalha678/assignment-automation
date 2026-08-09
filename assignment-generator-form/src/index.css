@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+@layer utilities {
+  .font-urdu {
+    font-family: 'Noto Naskh Arabic', 'Tahoma', 'Arial', sans-serif;
+  }
+}
+
