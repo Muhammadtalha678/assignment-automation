@@ -155,12 +155,16 @@ async def generate_assignment_docx(image_map:str,json_data_str: str, output_path
             run_intro_h.font.bold = True
             run_intro_h.font.color.rgb = RGBColor(0x00, 0x33, 0x66)
 
-            p_intro = doc.add_paragraph()
-            p_intro.paragraph_format.space_after = Pt(10)
-            p_intro.paragraph_format.line_spacing = 1.15
-            run_intro = p_intro.add_run(q.get("introduction"))
-            run_intro.font.name = 'Times New Roman'
-            run_intro.font.size = Pt(12)
+            # Text ko new lines (\n) par split karein aur alag paragraphs banayein
+            intro_text = q.get("introduction", "")
+            paragraphs_list = [p.strip() for p in intro_text.replace("\\n", "\n").split("\n") if p.strip()]
+            for para_text in paragraphs_list:
+                p_intro = doc.add_paragraph()
+                p_intro.paragraph_format.space_after = Pt(10)
+                p_intro.paragraph_format.line_spacing = 1.15
+                run_intro = p_intro.add_run(para_text)
+                run_intro.font.name = 'Times New Roman'
+                run_intro.font.size = Pt(12)
 
         # --- Sections / Sub-headings (Times New Roman, Size 14, Bold) ---
         for sec in q.get("sections", []):
@@ -175,12 +179,16 @@ async def generate_assignment_docx(image_map:str,json_data_str: str, output_path
             run_h.font.bold = True
             run_h.font.color.rgb = RGBColor(0x00, 0x33, 0x66)
 
-            p_body = doc.add_paragraph()
-            p_body.paragraph_format.space_after = Pt(10)
-            p_body.paragraph_format.line_spacing = 1.15
-            run_body = p_body.add_run(sec.get("explanation", ""))
-            run_body.font.name = 'Times New Roman'
-            run_body.font.size = Pt(12)
+             # Text ko new lines (\n) par split karein aur alag paragraphs banayein
+            body_text = sec.get("explanation", "")
+            paragraphs_list = [p.strip() for p in body_text.replace("\\n", "\n").split("\n") if p.strip()]
+            for para_text in paragraphs_list:
+                p_body = doc.add_paragraph()
+                p_body.paragraph_format.space_after = Pt(10)
+                p_body.paragraph_format.line_spacing = 1.15
+                run_body = p_body.add_run(para_text)
+                run_body.font.name = 'Times New Roman'
+                run_body.font.size = Pt(12)
 
         # --- Diagram Description Box ---
         # Add Pre-generated Image from Phase 1
@@ -223,12 +231,15 @@ async def generate_assignment_docx(image_map:str,json_data_str: str, output_path
             run_conc_h.font.bold = True
             run_conc_h.font.color.rgb = RGBColor(0x00, 0x33, 0x66)
 
-            p_conc_body = doc.add_paragraph()
-            p_conc_body.paragraph_format.space_after = Pt(16)
-            p_conc_body.paragraph_format.line_spacing = 1.15
-            run_conc_body = p_conc_body.add_run(q.get("conclusion"))
-            run_conc_body.font.name = 'Times New Roman'
-            run_conc_body.font.size = Pt(12)
+            conclusion_text = q.get("conclusion", "")
+            paragraphs_list = [p.strip() for p in conclusion_text.replace("\\n", "\n").split("\n") if p.strip()]
+            for para_text in paragraphs_list:
+                p_conc_body = doc.add_paragraph()
+                p_conc_body.paragraph_format.space_after = Pt(16)
+                p_conc_body.paragraph_format.line_spacing = 1.15
+                run_conc_body = p_conc_body.add_run(para_text)
+                run_conc_body.font.name = 'Times New Roman'
+                run_conc_body.font.size = Pt(12)
 
     # Save Word Document
     doc.save(output_path)

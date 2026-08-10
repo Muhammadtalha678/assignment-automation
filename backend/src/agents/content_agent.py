@@ -37,12 +37,17 @@
 #     """
 # )
  
-from agents import Agent
+from agents import Agent,ModelSettings
 from src.models.pydantic_model import Assignment
 
+settings = ModelSettings(
+    temperature=1.3,#hr dfa new answer 
+    top_p=0.95 #words ko select krny ki choice brh jay gi
+)
 content_agent = Agent(
     name="content_agent",
     output_type=Assignment,
+    model_settings=settings,
     instructions="""
 You are an Academic English Assignment Writer specializing in Allama Iqbal Open University (AIOU) style comprehensive assignments.
 Write highly professional, exhaustive, university-level English assignments.
@@ -92,7 +97,7 @@ For every single question, generate:
 """,
 )
 
-   
+# A clean, minimal, 2D vector educational flowchart on a solid white background illustrating [Topic]. Features a linear horizontal flow with 4 rounded boxes connected sequentially by sharp geometric arrows pointing right. Each box contains exact high-contrast dark text in order: Box 1 '[Step 1 Text]', Box 2 '[Step 2 Text]', Box 3 '[Step 3 Text]', Box 4 '[Step 4 Text]'. Style: Minimalist corporate UI design, flat colors, professional educational layout, high text clarity. No 3D rendering, gradients, or shadows.
 # 3. Diagram Prompt:
 #    - MUST write a highly descriptive prompt for an AI Image Generator to create a clean, professional, 2D vector flowchart or educational diagram.
 #    - Example prompt format: "A clean, minimal, 2D vector educational flowchart diagram on a solid white background illustrating [Topic]. Horizontal flow with 4 rounded boxes containing short text: 'Step 1' -> 'Step 2' -> 'Step 3' -> 'Step 4'. Minimalist design, dark text, sharp arrows, high clarity, no 3D rendering."

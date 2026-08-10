@@ -10,3 +10,4 @@ wheels/
 .venv
 .env
 hugging_face.py
+google_genai.py
