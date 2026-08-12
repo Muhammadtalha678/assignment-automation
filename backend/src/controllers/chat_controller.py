@@ -12,13 +12,30 @@ from src.configs.env_config import OPENAI_API_KEY
 from src.controllers.generate_image import generate_image, generate_image_via_advanced_web
 
 # --- Temporary File Cleanup Function ---
-def remove_temp_file(file_path: str):
+def remove_temp_file(doc_path: str,logo_path:str,image_map:str):
     try:
-        if os.path.exists(file_path):
-            os.remove(file_path)
-            print(f"[CLEANUP] Generated docx deleted successfully from server: {file_path}")
+        if os.path.exists(doc_path):
+            os.remove(doc_path)
+            print(f"[CLEANUP] Generated docx deleted successfully from server: {doc_path}")
     except Exception as e:
         print(f"[ERROR] Failed to delete temp file: {e}")
+
+    try:
+        if os.path.exists(logo_path):
+            os.remove(logo_path)
+            print(f"[CLEANUP] logo deleted successfully from server: {logo_path}")
+    except Exception as e:
+        print(f"[ERROR] Failed to delete temp file: {e}")
+
+    try:
+    
+        for image_path in image_map.values():
+             if image_path and os.path.exists(image_path):
+                 os.remove(image_path)
+                 print(f"Deleted Diagrams Path: {image_path}")
+    except Exception as e:
+        print(f"Warning: Could not clear image directory: {e}")
+        
 
 async def chat_controller(chat_data:data,backgroundTask:BackgroundTasks,agent_config):
     set_tracing_export_api_key(OPENAI_API_KEY)
@@ -118,7 +135,12 @@ async def chat_controller(chat_data:data,backgroundTask:BackgroundTasks,agent_co
     #     # "file_name": output_filename,
     #     "message": "Assignment Word document generated successfully!"
     # }
-    backgroundTask.add_task(remove_temp_file,file_path=output_path)
+    backgroundTask.add_task(
+        remove_temp_file,
+        doc_path=output_path,
+        logo_path=chat_data.logo_path,
+        image_map=image_map
+        )
     return FileResponse(
         path=output_path,
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",

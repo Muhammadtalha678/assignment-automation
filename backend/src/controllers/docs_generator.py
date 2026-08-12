@@ -79,7 +79,7 @@ async def generate_assignment_docx(image_map:str,json_data_str: str, output_path
     # table.autofit = False
     details = [
         ("Student Name:", str(data.get("student_name", ""))),
-        ("Registration ID:", str(data.get("registration_id", ""))),
+        ("Registration ID:", f"0000{data.get('registration_id', '')}"),
         ("Course Code:", str(data.get("course_code", ""))),
         ("Semester:", str(data.get("semester", "")))
     ]
@@ -244,15 +244,5 @@ async def generate_assignment_docx(image_map:str,json_data_str: str, output_path
     # Save Word Document
     doc.save(output_path)
     print("--> Phase 3: Cleaning up temporary images...")
-    try:
-
-        if os.path.exists(logo_path):
-            os.remove(logo_path)
-            print(f"Deleted Logo Path: {logo_path}")
-        for image_path in image_map.values():
-            if image_path and os.path.exists(image_path):
-                os.remove(image_path)
-            print(f"Deleted Diagrams Path: {image_path}")
-    except Exception as e:
-        print(f"Warning: Could not clear image directory: {e}")
+    
     return output_path

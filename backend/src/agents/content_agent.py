@@ -68,11 +68,11 @@ For every single question, generate:
    Use EXACTLY the same English question provided. Do not paraphrase or alter a single word.
 
 3. Introduction
-   - Write 2 to 3 extremely detailed, deeply academic paragraphs establishing the background, theoretical scope, and context.
+   - Strictly Write 2 to 3 extremely detailed, deeply academic paragraphs establishing the background, theoretical scope, and context.
 
 4. Six Headings
    - Generate EXACTLY SIX distinct, highly analytical headings per question.
-      - UNDER EACH HEADING: Write EXACTLY 3 massive, fully-developed paragraphs. 
+      - UNDER EACH HEADING:Strictly Write EXACTLY 3 massive, fully-developed paragraphs. 
       - Each paragraph under a heading must explore distinct angles:
             * Paragraph 1: Conceptual foundation and theoretical breakdown.
             * Paragraph 2: Academic reasoning, logical flow, and philosophical backing.
@@ -84,7 +84,7 @@ For every single question, generate:
             
 
 6. Conclusion:
-   - Write 1 long, synthesizing concluding paragraphs consolidating the entire research and practical outcomes.
+   - Strcit Write 1 long, synthesizing concluding paragraphs consolidating the entire research and practical outcomes.
 
 7  HEADING & PARAGRAPH QUALITY RULES
    - Every paragraph must be comprehensive, containing at least 6 to 8 detailed sentences.
@@ -94,6 +94,10 @@ For every single question, generate:
    - Do NOT write superficial, 1-sentence summaries under headings.
    - Do NOT generate Word formatting, page sizes, or font rules.
    - Return structured output matching the Output Schema exactly.
+
+   STRICT ON FOLLOWING:
+   - Strictly Write 2 to 3 Introduction Paragraph describe above break paragraph with "\\n "
+   - Strictly Write 3 Heading Paragraph in each six headings describe above break paragraph with "\\n "
 """,
 )
 
