@@ -27,32 +27,5 @@ jobs:
           # Aap ka Docker Hub repo aur latest tag
           # Aap ka Docker Hub repo aur latest tag
         tags: | 
-          muhammadtalha678/mart-backend:v${{github.run_number}}  
-          muhammadtalha678/mart-backend:latest  
+          muhammadtalha678/english_backend:latest  
     
-    - name: Clone HF Space
-      run: |
-       git clone https://oauth2:${{ secrets.HF_MARTBACKEND }}@huggingface.co/spaces/Muhammad51059579/mart_backend hf-space
-      
-     # Dockerfile update with exact SHA
-    - name: Update Dockerfile
-      run: |
-        cd hf-space
-
-        cat > Dockerfile << EOF
-        FROM muhammadtalha678/mart-backend:v${{ github.run_number }}
-        EOF
-    
-      # Commit and Push
-    - name: Push changes to HF Space
-      run: |
-        cd hf-space
-
-        git config user.email "github-actions@github.com"
-        git config user.name "GitHub Actions"
-
-        git add Dockerfile
-
-        git commit -m "Deploy image v${{ github.run_number }}" || echo "No changes"
-
-        git push  
