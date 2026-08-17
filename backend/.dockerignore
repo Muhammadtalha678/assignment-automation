@@ -1,0 +1,28 @@
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Build and distribution files
+build/
+dist/
+wheels/
+*.egg-info/
+
+# Git configs
+.gitignore
+.git/
+
+# Virtual environments and secrets
+.venv/
+.env
+.env.*
+
+# Temporary testing scripts
+hugging_face.py
+google_genai.py
+j.py
+hd_image.py
+
+# Assets/Images not needed in build
+aiou_logo.jpg

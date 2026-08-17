@@ -28,11 +28,12 @@ export default function App() {
 
   // Network State
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const API_ENDPOINT = 'http://192.168.1.40:8000/api/chat';
-
+  const API_ENDPOINT = 'http://192.168.1.38:8000/api/chat';
   // Strict Regex Patterns
   const URDU_REGEX = /^[\u0600-\u06FF\s0-9?؟]+$/;
-  const ENGLISH_REGEX = /^[A-Za-z0-9\s.,?!'"()-]+$/;
+  // const ENGLISH_REGEX = /^[A-Za-z0-9\s.,?!'"()-]+$/;
+  const ENGLISH_REGEX = /^[A-Za-z0-9\s.,?!'"()"-]+$/;
+
 
   // Handle File Selection
   const handleFileChange = (file: File | null) => {
@@ -165,12 +166,13 @@ export default function App() {
           toast.error(`Question #${i + 1} contains invalid characters. Urdu mode strictly accepts Urdu characters only.`);
           return false;
         }
-      } else if (language === 'English') {
-        if (!ENGLISH_REGEX.test(q)) {
-          toast.error(`Question #${i + 1} contains invalid or non-English characters. English mode strictly accepts English characters only.`);
-          return false;
-        }
-      }
+      } 
+      // else if (language === 'English') {
+      //   if (!ENGLISH_REGEX.test(q)) {
+      //     toast.error(`Question #${i + 1} contains invalid or non-English characters. English mode strictly accepts English characters only.`);
+      //     return false;
+      //   }
+      // }
     }
 
     return true;
@@ -241,7 +243,8 @@ export default function App() {
       const downloadUrl = window.URL.createObjectURL(blob);
       const tempLink = document.createElement('a');
       tempLink.href = downloadUrl;
-      const cleanFileName = `${studentName.trim().replace(/[^a-zA-Z0-9_-]/g, '_')}_Assignment.docx`;
+    // output_filename = f"Assignment_{chat_data.assignment_no}_{chat_data.student_name}_{chat_data.course_code}.docx"
+      const cleanFileName = `Assignment_${assignmentNo}_${studentName.trim().replace(/[^a-zA-Z0-9_-]/g, '_')}_${courseCode}.docx`;
       tempLink.setAttribute('download', cleanFileName);
       document.body.appendChild(tempLink);
       tempLink.click();

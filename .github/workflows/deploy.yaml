@@ -1,0 +1,58 @@
+name: Build and Deploy to Hugging Face
+
+on:
+  push:
+    branches:
+      - main  # Agar aap ki main branch ka naam 'master' hai, toh yahan master likhein
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build and Push Docker Image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend        # GitHub ko bataya ke code backend folder mein hai
+        file: ./backend/Dockerfile # Dockerfile ka sahi rasta
+        push: true
+          # Aap ka Docker Hub repo aur latest tag
+          # Aap ka Docker Hub repo aur latest tag
+        tags: | 
+          muhammadtalha678/mart-backend:v${{github.run_number}}  
+          muhammadtalha678/mart-backend:latest  
+    
+    - name: Clone HF Space
+      run: |
+       git clone https://oauth2:${{ secrets.HF_MARTBACKEND }}@huggingface.co/spaces/Muhammad51059579/mart_backend hf-space
+      
+     # Dockerfile update with exact SHA
+    - name: Update Dockerfile
+      run: |
+        cd hf-space
+
+        cat > Dockerfile << EOF
+        FROM muhammadtalha678/mart-backend:v${{ github.run_number }}
+        EOF
+    
+      # Commit and Push
+    - name: Push changes to HF Space
+      run: |
+        cd hf-space
+
+        git config user.email "github-actions@github.com"
+        git config user.name "GitHub Actions"
+
+        git add Dockerfile
+
+        git commit -m "Deploy image v${{ github.run_number }}" || echo "No changes"
+
+        git push  

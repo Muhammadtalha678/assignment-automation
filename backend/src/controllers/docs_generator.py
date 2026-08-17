@@ -23,7 +23,7 @@ def set_cell_margins(cell, top=100, bottom=100, left=150, right=150):
         tcMar.append(node)
     tcPr.append(tcMar)
 
-async def generate_assignment_docx(image_map:str,json_data_str: str, output_path: str = "Assignment.docx", logo_path: str = None):
+async def generate_assignment_docx(registration_id:str,image_map:str,json_data_str: str, output_path: str = "Assignment.docx", logo_path: str = None):
     # 1. Parse JSON Input
     if isinstance(json_data_str, str):
         data = json.loads(json_data_str)
@@ -77,9 +77,10 @@ async def generate_assignment_docx(image_map:str,json_data_str: str, output_path
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
     table.autofit = False
     # table.autofit = False
-    details = [
-        ("Student Name:", str(data.get("student_name", ""))),
-        ("Registration ID:", f"0000{data.get('registration_id', '')}"),
+    details = [ 
+        ("Student Name:", str(data.get("student_name", "")).upper()),
+        # ("Registration ID:", f"0000{data.get('registration_id', '')}"),
+        ("Registration ID:", f"{data.get('registration_id', '')}"),
         ("Course Code:", str(data.get("course_code", ""))),
         ("Semester:", str(data.get("semester", "")))
     ]

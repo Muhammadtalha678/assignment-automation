@@ -35,5 +35,5 @@ class Assignment(BaseModel):
     course_code:int
     semester:str
     student_name:str
-    registration_id:int
+    registration_id:str
     questions:list[Question]

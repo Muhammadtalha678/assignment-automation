@@ -9,7 +9,8 @@ from src.controllers.docs_generator import generate_assignment_docx
 from src.models.pydantic_model import data
 from src.agents.content_agent import content_agent
 from src.configs.env_config import OPENAI_API_KEY
-from src.controllers.generate_image import generate_image, generate_image_via_advanced_web
+# from src.controllers.generate_image import generate_image, generate_image_via_advanced_web
+from src.controllers.generate_image_1 import generate_image_via_advanced_web
 
 # --- Temporary File Cleanup Function ---
 def remove_temp_file(doc_path: str,logo_path:str,image_map:str):
@@ -41,6 +42,7 @@ async def chat_controller(chat_data:data,backgroundTask:BackgroundTasks,agent_co
     set_tracing_export_api_key(OPENAI_API_KEY)
 
     # remove logo_path and convert to str
+    registration_id = chat_data.registration_id
     json_data = chat_data.model_dump_json(exclude={"logo_path"})
     print("send json data to agent",json_data)
     orchistrator_agent = Agent(
@@ -121,7 +123,8 @@ async def chat_controller(chat_data:data,backgroundTask:BackgroundTasks,agent_co
         json_data_str=data,
         image_map=image_map,
         output_path=output_filename,
-        logo_path=chat_data.logo_path
+        logo_path=chat_data.logo_path,
+        registration_id=registration_id
     )
 
     if not os.path.exists(output_path):

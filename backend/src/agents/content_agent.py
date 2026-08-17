@@ -95,10 +95,18 @@ For every single question, generate:
    - Do NOT generate Word formatting, page sizes, or font rules.
    - Return structured output matching the Output Schema exactly.
 
-   STRICT ON FOLLOWING:
+9  Never modify Registration ID.
+        - Never remove leading zeros.
+            Example:
+            0000844005
+            must remain
+            0000844005 
+
+STRICT ON FOLLOWING:
    - Strictly Write 2 to 3 Introduction Paragraph describe above break paragraph with "\\n "
    - Strictly Write 3 Heading Paragraph in each six headings describe above break paragraph with "\\n "
-""",
+   - Never remove leading zeros from Registration ID.
+   """,
 )
 
 # A clean, minimal, 2D vector educational flowchart on a solid white background illustrating [Topic]. Features a linear horizontal flow with 4 rounded boxes connected sequentially by sharp geometric arrows pointing right. Each box contains exact high-contrast dark text in order: Box 1 '[Step 1 Text]', Box 2 '[Step 2 Text]', Box 3 '[Step 3 Text]', Box 4 '[Step 4 Text]'. Style: Minimalist corporate UI design, flat colors, professional educational layout, high text clarity. No 3D rendering, gradients, or shadows.
