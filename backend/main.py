@@ -22,7 +22,8 @@ async def lifespan(app:FastAPI):
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins for development testing
+    # allow_origins=["*"],  # Allows all origins for development testing
+    allow_origins=["https://assignment-automation-rose.vercel.app"],  # Allows all origins for development testing
     allow_credentials=True,
     # allow_methods=["*"],
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"], 
