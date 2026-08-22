@@ -32,7 +32,14 @@ async def generate_image_via_advanced_web(json_data_str:str):
             print("Loading authentication state from cookies file...")
             browser = await playwright.chromium.launch(
                 headless=True, # 3. FIXED: Must be True for Cloud
-                args=['--no-sandbox', '--disable-setuid-sandbox']
+                # args=['--no-sandbox', '--disable-setuid-sandbox']
+                args=[
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                    '--disable-blink-features=AutomationControlled',
+                    '--use-fake-ui-for-media-stream',
+                    '--window-size=1920,1080'
+                ]
             )
             context = await browser.new_context(storage_state=auth_file)
         else:
