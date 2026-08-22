@@ -67,7 +67,7 @@ async def generate_image_via_advanced_web(json_data_str:str):
                     print(f"Executing prompt [{idx}]: {prompt}")
                     
                     print("Google Gemini open ho raha hai...")
-                    await page.goto("https://google.com", wait_until="domcontentloaded")
+                    await page.goto("https://gemini.google.com", wait_until="domcontentloaded")
                     
                     # FIXED: Render slow hota hai, isliye page open hone ke baad thoda zyada wait karein
                     print("Waiting for page stability on cloud...")
