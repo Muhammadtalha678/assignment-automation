@@ -57,40 +57,86 @@ async def generate_image_via_advanced_web(json_data_str:str):
        
         for (idx, question) in enumerate(questions, start=1):
                     prompt = question.get("diagram_prompt")
-        
+                    print(f"Executing prompt [{idx}]: {prompt}")
+                    
                     print("Google Gemini open ho raha hai...")
-                    await page.goto("https://gemini.google.com", wait_until="domcontentloaded")
-                    await asyncio.sleep(6)
-                   
-                    # Export state dynamically if running locally so you can use it on the cloud later
-                    if not os.path.exists(auth_file) and os.name == 'nt':
-                       await context.storage_state(path=auth_file)
-                       print("Generated auth_state.json! Upload this to your cloud service.")
-
-
-
-
+                    await page.goto("https://google.com", wait_until="domcontentloaded")
+                    
+                    # FIXED: Render slow hota hai, isliye page open hone ke baad thoda zyada wait karein
+                    print("Waiting for page stability on cloud...")
+                    await asyncio.sleep(15) # 6 seconds se barha kar 15 kiya
+        
                     print("Locating chat text field area...")
-                    chat_box = page.locator("div[contenteditable='true'], div[aria-label*='Prompt'],textarea").first
-                    await chat_box.click()
-                    await asyncio.sleep(1)
+                    # FIXED: Locator string ko safe banaya aur contenteditable ready hone ka intazar kiya
+                    chat_selector = "div[contenteditable='true'], div[aria-label*='Prompt'], textarea"
+                    
+                    try:
+                        # Jab tak text box real mein samne na aaye aur click ke kabil na ho, wait karein
+                        await page.wait_for_selector(chat_selector, state="visible", timeout=20000)
+                        chat_box = page.locator(chat_selector).first
+                        
+                        # Manual safety clicks with delay
+                        await chat_box.click()
+                        await asyncio.sleep(2)
+                        
+                        # FIXED: Direct focus ensure karein taake keyboard events miss na hon
+                        await chat_box.focus()
+                        await asyncio.sleep(1)
+                    except Exception as e:
+                        print(f"❌ Text field dhoondne mein masla aaya: {e}")
+                        continue
                 
                     print("Typing prompt string...")
-                    await page.keyboard.type(prompt, delay=35) 
-                    await asyncio.sleep(2)
+                    # FIXED: Render par typing speed thodi slow (delay=50) rakhein taake system crash na ho
+                    await page.keyboard.type(prompt, delay=50) 
+                    await asyncio.sleep(3)
                 
                     print("Submitting prompt query...")
                     submit_btn = page.locator("button[aria-label*='Send'], button.send-button, mat-icon:has-text('send')").first
                     if await submit_btn.count() > 0 and await submit_btn.is_visible():
-                        print("Visible Run button mil gaya! Simulating human mouse cursor move...")
-                        await submit_btn.hover()
-                        await asyncio.sleep(1)
+                        print("Visible Run button mil gaya! Submitting...")
                         await submit_btn.click()
                     else:
+                        print("Button nahi mila, Enter key press kar rahe hain...")
                         await page.keyboard.press("Enter")
                     
-                    print("Generation initiated. Monitoring DOM execution layout (40 seconds wait)...")
-                    await asyncio.sleep(40)
+                    print("Generation initiated. Monitoring DOM execution layout (45 seconds wait)...")
+                    await asyncio.sleep(45)
+                    # prompt = question.get("diagram_prompt")
+        
+                    # print("Google Gemini open ho raha hai...")
+                    # await page.goto("https://gemini.google.com", wait_until="domcontentloaded")
+                    # await asyncio.sleep(15)
+                   
+                    # # Export state dynamically if running locally so you can use it on the cloud later
+                    # if not os.path.exists(auth_file) and os.name == 'nt':
+                    #    await context.storage_state(path=auth_file)
+                    #    print("Generated auth_state.json! Upload this to your cloud service.")
+
+
+
+
+                    # print("Locating chat text field area...")
+                    # chat_box = page.locator("div[contenteditable='true'], div[aria-label*='Prompt'],textarea").first
+                    # await chat_box.click()
+                    # await asyncio.sleep(1)
+                
+                    # print("Typing prompt string...")
+                    # await page.keyboard.type(prompt, delay=35) 
+                    # await asyncio.sleep(2)
+                
+                    # print("Submitting prompt query...")
+                    # submit_btn = page.locator("button[aria-label*='Send'], button.send-button, mat-icon:has-text('send')").first
+                    # if await submit_btn.count() > 0 and await submit_btn.is_visible():
+                    #     print("Visible Run button mil gaya! Simulating human mouse cursor move...")
+                    #     await submit_btn.hover()
+                    #     await asyncio.sleep(1)
+                    #     await submit_btn.click()
+                    # else:
+                    #     await page.keyboard.press("Enter")
+                    
+                    # print("Generation initiated. Monitoring DOM execution layout (40 seconds wait)...")
+                    # await asyncio.sleep(40)
                     
                     # Locate the generated high-res image component
                     image_node = page.locator(
