@@ -11,3 +11,4 @@ wheels/
 .env
 hugging_face.py
 google_genai.py
+auth_state.json

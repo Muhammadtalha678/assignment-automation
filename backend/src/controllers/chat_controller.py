@@ -10,7 +10,7 @@ from src.agents.content_agent import content_agent
 from src.configs.env_config import OPENAI_API_KEY
 # from src.controllers.generate_image import generate_image, generate_image_via_advanced_web
 from src.controllers.generate_image_1 import generate_image_via_advanced_web
-
+from j import f
 # --- Temporary File Cleanup Function ---
 def remove_temp_file(doc_path: str,logo_path:str,image_map:str):
     try:
@@ -92,8 +92,8 @@ async def chat_controller(chat_data:data,backgroundTask:BackgroundTasks,agent_co
         run_config=agent_config.config(),
 
     )
-    agent_raw_output = result.final_output
-    # agent_raw_output = f
+    # agent_raw_output = result.final_output
+    agent_raw_output = f
     if (isinstance(agent_raw_output,str)):
         dict_content = json.loads(agent_raw_output)
     else:

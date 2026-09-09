@@ -1,10 +1,13 @@
 import os
 import asyncio
+import shutil
 from playwright.async_api import async_playwright
 from playwright_stealth import Stealth
 import json
 import base64
 import uuid
+
+from get_auth_state import save_login_state
 async def generate_image_via_advanced_web(json_data_str:str):
     # print(prompt)
     if isinstance(json_data_str, str):
@@ -24,41 +27,66 @@ async def generate_image_via_advanced_web(json_data_str:str):
             await asyncio.sleep(1)
         except:
             pass
-         
+    
+    auth_file = "auth_state.json"
+    if not os.path.exists(auth_file):
+        print("\n[⚠️ ALERT]: auth_state.json nahi mili! Pehli dafa login setup chal raha hai...")
+        
+        await save_login_state(auth_file=auth_file)
+        print("Ab main automation script shuru ho rahi hai...\n")                 
 
     async with async_playwright() as playwright:
-        auth_file = "auth_state.json"
-        if os.path.exists(auth_file):
-            print("Loading authentication state from cookies file...")
-            browser = await playwright.chromium.launch(
-                headless=True, # 3. FIXED: Must be True for Cloud
-                # args=['--no-sandbox', '--disable-setuid-sandbox']
-                args=[
-                    '--no-sandbox',
-                    '--disable-setuid-sandbox',
-                    '--disable-blink-features=AutomationControlled',
-                    '--use-fake-ui-for-media-stream',
-                    '--window-size=1920,1080'
-                ]
-            )
-            context = await browser.new_context(storage_state=auth_file)
-        else:
-            print("No auth_state.json found. Falling back to local Windows Profile...")
-            user_data_dir = os.path.expanduser("~\\AppData\\Local\\Google\\Chrome\\User Data")
-
-            print("Launching natural browser context with Profile 4...")
-            context = await playwright.chromium.launch_persistent_context(
-                user_data_dir=user_data_dir,
-                headless=False,
-                channel="chrome",
-                args=[
-                    # f"--profile-directory=Profile 4", 
-                    f"--profile-directory=Profile 1", 
-                    "--no-first-run",
-                    "--disable-blink-features=AutomationControlled"
-                ]
-            )
-        
+        # if os.path.exists(auth_file):
+        #     print("Loading authentication state from cookies file...")
+            # browser = await playwright.chromium.launch(
+            #     headless=False, # 3. FIXED: Must be True for Cloud
+            #     # args=['--no-sandbox', '--disable-setuid-sandbox']
+            #     args=[
+            #         '--no-sandbox',
+            #         '--disable-setuid-sandbox',
+            #         '--disable-blink-features=AutomationControlled',
+            #         '--use-fake-ui-for-media-stream',
+            #         '--window-size=1920,1080'
+            #     ]
+            # )
+            # context = await browser.new_context(storage_state=auth_file)
+        # else:
+        #     print("No auth_state.json found. Falling back to local Windows Profile...")
+        #     # user_data_dir = os.path.expanduser("~\\AppData\\Local\\Google\\Chrome\\User Data")
+        #     user_data_dir = os.path.expanduser("~\\AppData\\Local\\GoogleChromeTempLogin")
+        #     real_profile = os.path.expanduser("~\\AppData\\Local\\Google\\Chrome\\User Data")
+            
+        #     if not os.path.exists(user_data_dir):
+        #         shutil.copytree(real_profile, user_data_dir, ignore=shutil.ignore_patterns(
+        #             "Singleton*", "*.log", "GPUCache", "Crash Reports"
+        #     ))
+            
+        #     print("Launching natural browser context with Profile 4...")
+        #     context = await playwright.chromium.launch_persistent_context(
+        #         user_data_dir=user_data_dir,
+        #         headless=False,
+        #         channel="chrome",
+        #         args=[
+        #             # f"--profile-directory=Profile 4", 
+        #             f"--profile-directory=Default", 
+        #             "--no-first-run",
+        #             "--disable-blink-features=AutomationControlled"
+        #         ]
+        #     )
+        print("Loading authentication state from cookies file for main task...")
+        browser = await playwright.chromium.launch(
+                        headless=True, # 3. FIXED: Must be True for Cloud
+                        # args=['--no-sandbox', '--disable-setuid-sandbox']
+                        args=[
+                            '--no-sandbox',
+                            '--disable-setuid-sandbox',
+                            '--disable-blink-features=AutomationControlled',
+                            '--use-fake-ui-for-media-stream',
+                            '--window-size=1920,1080'
+                        ]
+                    )
+        context = await browser.new_context(storage_state=auth_file,
+        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
         page = await context.new_page()
         await Stealth().apply_stealth_async(page)
        
@@ -72,7 +100,8 @@ async def generate_image_via_advanced_web(json_data_str:str):
                     # FIXED: Render slow hota hai, isliye page open hone ke baad thoda zyada wait karein
                     print("Waiting for page stability on cloud...")
                     await asyncio.sleep(15) # 6 seconds se barha kar 15 kiya
-        
+
+
                     print("Locating chat text field area...")
                     # FIXED: Locator string ko safe banaya aur contenteditable ready hone ka intazar kiya
                     chat_selector = "div[contenteditable='true'], div[aria-label*='Prompt'], textarea"
@@ -211,7 +240,11 @@ async def generate_image_via_advanced_web(json_data_str:str):
                         print(f"[SUCCESS] Viewport screen extracted to: {file_path}")
                         image_map[idx] = file_path
                         
-                 
+         # UPDATED: LOOP KHATAM HONE KE BAAD AUR CONTEXT CLOSE HONE SE PEHLE
+        # Yeh line har dafa latest/refreshed cookies ko json file mein overwrite kar degi
+        print("Updating auth_state.json with refreshed cookies/session...")
+        await context.storage_state(path=auth_file)
+                         
         await context.close()
         print(image_map)
         return image_map 
