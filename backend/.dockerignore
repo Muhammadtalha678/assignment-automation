@@ -21,7 +21,7 @@ wheels/
 # Temporary testing scripts
 hugging_face.py
 google_genai.py
-j.py
+<!-- j.py -->
 hd_image.py
 
 # Assets/Images not needed in build
