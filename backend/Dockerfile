@@ -14,7 +14,7 @@ RUN uv sync --frozen --no-cache --no-editable
 
 ENV PATH="/app/.venv/bin:$PATH"
 
-RUN uv run playwright install chrome --with-deps && \
+RUN uv run playwright install chromium --with-deps && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 
