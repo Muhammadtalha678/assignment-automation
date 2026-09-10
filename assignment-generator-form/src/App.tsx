@@ -29,7 +29,7 @@ export default function App() {
   // Network State
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   // const API_ENDPOINT = 'http://127.0.0.1:8000/api/chat';
-  const API_ENDPOINT = 'https://english-assignment-api.onrender.com/api/chat';
+  const API_ENDPOINT = 'https://aiou-english-api.onrender.com/api/chat';
   // Strict Regex Patterns
   const URDU_REGEX = /^[\u0600-\u06FF\s0-9?؟]+$/;
   // const ENGLISH_REGEX = /^[A-Za-z0-9\s.,?!'"()-]+$/;
