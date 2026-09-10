@@ -104,15 +104,18 @@ async def generate_image_via_advanced_web(json_data_str:str):
 
                     print("Locating chat text field area...")
                     # FIXED: Locator string ko safe banaya aur contenteditable ready hone ka intazar kiya
-                    chat_selector = "div[contenteditable='true'], div[aria-label*='Prompt'], textarea"
-                    
+                    # chat_selector = "div[contenteditable='true'], div[aria-label*='Prompt'], textarea"
+                    chat_selector = "div.ql-editor[contenteditable='true'], div[role='textbox'], div[aria-label*='Prompt']"
+                     
                     try:
                         # Jab tak text box real mein samne na aaye aur click ke kabil na ho, wait karein
-                        await page.wait_for_selector(chat_selector, state="visible", timeout=20000)
+                        await page.wait_for_selector(chat_selector, state="attached", timeout=20000)
+                        # await page.wait_for_selector(chat_selector, state="visible", timeout=20000)
                         chat_box = page.locator(chat_selector).first
                         
                         # Manual safety clicks with delay
-                        await chat_box.click()
+                        await chat_box.click(force=True)
+                        # await chat_box.click()
                         await asyncio.sleep(2)
                         
                         # FIXED: Direct focus ensure karein taake keyboard events miss na hon
@@ -128,7 +131,9 @@ async def generate_image_via_advanced_web(json_data_str:str):
                     await asyncio.sleep(3)
                 
                     print("Submitting prompt query...")
-                    submit_btn = page.locator("button[aria-label*='Send'], button.send-button, mat-icon:has-text('send')").first
+                    # submit_btn = page.locator("button[aria-label*='Send'], button.send-button, mat-icon:has-text('send')").first
+                    submit_btn = page.locator("button[aria-label*='Send prompt'], button[aria-label*='Send'], button.send-button").first
+                                        
                     if await submit_btn.count() > 0 and await submit_btn.is_visible():
                         print("Visible Run button mil gaya! Submitting...")
                         await submit_btn.click()
