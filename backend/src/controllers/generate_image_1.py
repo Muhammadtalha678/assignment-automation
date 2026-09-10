@@ -20,13 +20,13 @@ async def generate_image_via_advanced_web(json_data_str:str):
 
     questions = data.get("questions",[])
     image_map = {}
-    if os.name == "nt":
-    # # Background Chrome instances clear tracking
-        try:
-            os.system("taskkill /f /im chrome.exe")
-            await asyncio.sleep(1)
-        except:
-            pass
+    # if os.name == "nt":
+    # # # Background Chrome instances clear tracking
+    #     try:
+    #         os.system("taskkill /f /im chrome.exe")
+    #         await asyncio.sleep(1)
+    #     except:
+    #         pass
     
     auth_file = "auth_state.json"
     if not os.path.exists(auth_file):
