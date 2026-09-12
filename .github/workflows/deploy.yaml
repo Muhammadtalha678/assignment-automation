@@ -24,7 +24,7 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_TOKEN }}
 
-    - name: Build and Push Docker Image
+    - name: Build and Push Backend Image
       uses: docker/build-push-action@v5
       with:
         context: ./backend        # GitHub ko bataya ke code backend folder mein hai
@@ -35,4 +35,16 @@ jobs:
           # Aap ka Docker Hub repo aur latest tag
         tags: | 
           muhammadtalha678/english_backend:latest  
+    
+    - name: Build and Push Frontend Image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./assignment-generator-form        # GitHub ko bataya ke code backend folder mein hai
+        file: ./assignment-generator-form/Dockerfile # Dockerfile ka sahi rasta
+        push: true
+        platforms: linux/arm64
+          # Aap ka Docker Hub repo aur latest tag
+          # Aap ka Docker Hub repo aur latest tag
+        tags: | 
+          muhammadtalha678/english_frontend:latest  
     
