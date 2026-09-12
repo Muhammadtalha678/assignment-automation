@@ -3,25 +3,29 @@ import asyncio
 from playwright.async_api import async_playwright
 from playwright_stealth import Stealth
 async def save_login_state(auth_file:str):
-    async with async_playwright() as playwright:
-        # Hum ek temporary folder banayenge sirf login karne ke liye
+    if os.name == "nt":
         user_data_dir = os.path.expanduser("~\\AppData\\Local\\Google\\ChromeTempLogin")
-        
+    else:
+        user_data_dir = "/tmp/chrome_user_login_session" # Linux Temp Folder
+    async with async_playwright() as playwright:
         # Google ko chakma dene ke liye stealth settings ke sath browser launch karein
-        login_context  = await playwright.chromium.launch_persistent_context(
-            user_data_dir=user_data_dir,
-            headless=False,
-            channel="chrome",
-            # Yeh args robot hone ka nishan (navigator.webdriver) khatam kar dete hain
-            args=[
+        launch_args = {
+            "user_data_dir": user_data_dir,
+            "headless": False, # Dynamic UI rendering support karne ke liye False hi rahega
+            "args": [
                 "--disable-blink-features=AutomationControlled",
-                "--no-first-run"
-            ],
-            # Fake user agent taake Google normal browser samjhe
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-        )
+                "--no-first-run",
+                "--no-sandbox",
+                "--disable-dev-shm-usage"
+            ]
+        }
+        if os.name == "nt":
+            launch_args["channel"] = "chrome"
+
+        login_context  = await playwright.chromium.launch_persistent_context(**launch_args)
         
-        login_page = await login_context.new_page()
+        # login_page = await login_context.new_page()
+        login_page = login_context.pages if login_context.pages else await login_context.new_page()
         # await Stealth().apply_stealth_async(login_page)
         # Google Login page par jayen
         await login_page.goto("https://accounts.google.com")

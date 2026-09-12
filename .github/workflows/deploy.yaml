@@ -30,7 +30,7 @@ jobs:
         context: ./backend        # GitHub ko bataya ke code backend folder mein hai
         file: ./backend/Dockerfile # Dockerfile ka sahi rasta
         push: true
-        platforms: linux/amd64,linux/arm64
+        platforms: linux/arm64
           # Aap ka Docker Hub repo aur latest tag
           # Aap ka Docker Hub repo aur latest tag
         tags: | 
