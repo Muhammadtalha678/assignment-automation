@@ -82,6 +82,7 @@ async def generate_image_via_advanced_web(json_data_str:str):
                             '--disable-setuid-sandbox',
                             '--disable-blink-features=AutomationControlled',
                             '--use-fake-ui-for-media-stream',
+                            '--disable-dev-shm-usage',
                             '--window-size=1920,1080'
                         ]
                     )
