@@ -30,11 +30,11 @@ async def generate_image_via_advanced_web(json_data_str:str):
     
     auth_file = "auth_state.json"
     if not os.path.exists(auth_file):
-        print("\n[⚠️ ALERT]: auth_state.json nahi mili! Pehli dafa login setup chal raha hai...")
+        # print("\n[⚠️ ALERT]: auth_state.json nahi mili! Pehli dafa login setup chal raha hai...")
         
-        await save_login_state(auth_file=auth_file)
-        print("Ab main automation script shuru ho rahi hai...\n")                 
-
+        # await save_login_state(auth_file=auth_file)
+        # print("Ab main automation script shuru ho rahi hai...\n")                 
+        raise RuntimeError("auth_state.json missing — generate it locally first")
     async with async_playwright() as playwright:
         # if os.path.exists(auth_file):
         #     print("Loading authentication state from cookies file...")
