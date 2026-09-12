@@ -48,3 +48,14 @@ jobs:
         tags: | 
           muhammadtalha678/english_frontend:latest  
     
+    - name: Deploy to Oracle VM
+      uses: appleboy/ssh-action@v1
+      with:
+        host: ${{ secrets.ORACLE_HOST }}
+        username: ubuntu
+        key: ${{ secrets.ORACLE_SSH_KEY }}
+        script: |
+          cd /home/ubuntu
+          docker-compose pull
+          docker-compose down
+          docker-compose up -d
