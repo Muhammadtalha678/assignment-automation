@@ -1,16 +1,12 @@
 import json
 import os
-import shutil
 from docx import Document
 from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT, WD_TABLE_ALIGNMENT
 from docx.oxml import OxmlElement, parse_xml
 from docx.oxml.ns import nsdecls, qn
-
 from src.helper.helper_functions import add_page_border,set_table_borders
-from src.controllers.graphviz_diagram import generate_graphviz_diagram
-from src.controllers.generate_image import generate_image, generate_image_via_advanced_web
 
 def set_cell_margins(cell, top=100, bottom=100, left=150, right=150):
     """Utility to set internal cell padding."""

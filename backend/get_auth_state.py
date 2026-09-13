@@ -24,8 +24,7 @@ async def save_login_state(auth_file:str):
 
         login_context  = await playwright.chromium.launch_persistent_context(**launch_args)
         
-        # login_page = await login_context.new_page()
-        login_page = login_context.pages if login_context.pages else await login_context.new_page()
+        login_page = await login_context.new_page()
         # await Stealth().apply_stealth_async(login_page)
         # Google Login page par jayen
         await login_page.goto("https://accounts.google.com")
