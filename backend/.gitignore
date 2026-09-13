@@ -11,3 +11,5 @@ wheels/
 .env
 hugging_face.py
 google_genai.py
+src/controllers/graphviz_diagram.py
+src/controllers/generate_image.py
