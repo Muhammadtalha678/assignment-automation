@@ -23,6 +23,7 @@ hugging_face.py
 google_genai.py
 <!-- j.py -->
 hd_image.py
-
+src/controllers/graphviz_diagram.py
+src/controllers/generate_image.py
 # Assets/Images not needed in build
 aiou_logo.jpg
