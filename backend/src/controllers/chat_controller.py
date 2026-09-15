@@ -11,7 +11,13 @@ from src.configs.env_config import OPENAI_API_KEY
 from src.controllers.generate_image_1 import generate_image_via_advanced_web
 from j import f
 # --- Temporary File Cleanup Function ---
-def remove_temp_file(doc_path: str,logo_path:str,image_map:str):
+def remove_temp_file(doc_path: str,logo_path:str,image_map:str,cookie_file:str):
+    try:
+        if os.path.exists(cookie_file):
+            os.remove(cookie_file)
+            print(f"[CLEANUP] Generated docx deleted successfully from server: {cookie_file}")
+    except Exception as e:
+        print(f"[ERROR] Failed to delete temp file: {e}")
     try:
         if os.path.exists(doc_path):
             os.remove(doc_path)
@@ -36,12 +42,12 @@ def remove_temp_file(doc_path: str,logo_path:str,image_map:str):
         print(f"Warning: Could not clear image directory: {e}")
         
 
-async def chat_controller(chat_data:data,backgroundTask:BackgroundTasks,agent_config):
+async def chat_controller(chat_data:data,backgroundTask:BackgroundTasks,agent_config,cookies_path:str):
     set_tracing_export_api_key(OPENAI_API_KEY)
 
     # remove logo_path and convert to str
     registration_id = chat_data.registration_id
-    json_data = chat_data.model_dump_json(exclude={"logo_path"})
+    json_data = chat_data.model_dump_json(exclude={"logo_path","injected_cookies","user_uuid"})
     print("send json data to agent",json_data)
     orchistrator_agent = Agent(
         name="orchistrator agent",
@@ -108,7 +114,7 @@ async def chat_controller(chat_data:data,backgroundTask:BackgroundTasks,agent_co
     # dict_content = dict_content.model_dump()
     output_filename = f"Assignment_{chat_data.assignment_no}_{chat_data.student_name}_{chat_data.course_code}.docx"
 
-    image_map = await generate_image_via_advanced_web(data)
+    image_map = await generate_image_via_advanced_web(data,auth_file=cookies_path)
     # image_map = {
     #     1: r"D:\AIOU\assignment-automation\backend\diagrams\temp_1.png",
     #     2: r"D:\AIOU\assignment-automation\backend\diagrams\temp_2.png",
@@ -140,7 +146,8 @@ async def chat_controller(chat_data:data,backgroundTask:BackgroundTasks,agent_co
         remove_temp_file,
         doc_path=output_path,
         logo_path=chat_data.logo_path,
-        image_map=image_map
+        image_map=image_map,
+        cookie_file=cookies_path
         )
     return FileResponse(
         path=output_path,
