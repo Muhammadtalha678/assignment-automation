@@ -197,33 +197,10 @@ async def generate_image_via_advanced_web(json_data_str:str,auth_file:str):
                         element_handle = await image_node.element_handle()
                         
                         # Bypassing the 403 network barrier by pulling raw cross-origin binary definitions using JavaScript
-                        base64_data = await page.evaluate("""
-                            async (img) => {
-                                return new Promise((resolve) => {
-                                    if (!img.complete) {
-                                        img.onload = () => convert();
-                                    } else {
-                                        convert();
-                                    }
-                                    function convert() {
-                                        try {
-                                            const canvas = document.createElement('canvas');
-                                            canvas.width = img.naturalWidth;
-                                            canvas.height = img.naturalHeight;
-                                            const ctx = canvas.getContext('2d');
-                                            ctx.drawImage(img, 0, 0);
-                                            resolve(canvas.toDataURL('image/png'));
-                                        } catch (e) {
-                                            resolve(null);
-                                        }
-                                    }
-                                });
-                            }
-                        """, element_handle)
-                                                # Bypassing the 403 network barrier with targeted color transparent filter pipeline
                         # base64_data = await page.evaluate("""
                         #     async (img) => {
                         #         return new Promise((resolve) => {
+                                    
                         #             if (!img.complete) {
                         #                 img.onload = () => convert();
                         #             } else {
@@ -235,29 +212,7 @@ async def generate_image_via_advanced_web(json_data_str:str,auth_file:str):
                         #                     canvas.width = img.naturalWidth;
                         #                     canvas.height = img.naturalHeight;
                         #                     const ctx = canvas.getContext('2d');
-                                            
-                        #                     // 1. Initial layer composition draw
                         #                     ctx.drawImage(img, 0, 0);
-                                            
-                        #                     // 2. Fetching pixel definitions
-                        #                     const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                        #                     const data = imgData.data;
-                                            
-                        #                     // 3. Smart RGB Tolerance Loop for light blue / off-white values
-                        #                     for (let i = 0; i < data.length; i += 4) {
-                        #                         const r = data[i];     // Red
-                        #                         const g = data[i + 1]; // Green
-                        #                         const b = data[i + 2]; // Blue
-                                                
-                        #                         // 🚀 RANGE FILTER: Flowchart ke pichhe ka halka blue/greyish data pakadne ke liye.
-                        #                         // Is range ke andar aane wale saare static backgrounds 100% translucent ho jayenge.
-                        #                         if (r >= 235 && g >= 240 && b >= 240) {
-                        #                             data[i + 3] = 0; // Set alpha channel to 0 (Fully Transparent)
-                        #                         }
-                        #                     }
-                                            
-                        #                     // 4. Repopulate processed canvas pixels map
-                        #                     ctx.putImageData(imgData, 0, 0);
                         #                     resolve(canvas.toDataURL('image/png'));
                         #                 } catch (e) {
                         #                     resolve(null);
@@ -267,20 +222,75 @@ async def generate_image_via_advanced_web(json_data_str:str,auth_file:str):
                         #     }
                         # """, element_handle)
 
-        
-                        if base64_data and "base64," in base64_data:
-                            file_path = os.path.abspath(os.path.join(output_dir, f"hdimage_{uuid.uuid4()}_{idx}.png"))
+                        base64_data = await page.evaluate("""
+    async (img) => {
+        return new Promise((resolve) => {
+
+            const convert = () => {
+                try {
+                    const canvas = document.createElement('canvas');
+
+                    canvas.width = img.naturalWidth;
+                    canvas.height = img.naturalHeight;
+
+                    const ctx = canvas.getContext('2d', {
+                        willReadFrequently: true
+                    });
+
+                    ctx.drawImage(img, 0, 0);
+
+                    resolve(canvas.toDataURL('image/png'));
+                } catch (e) {
+                    console.error("Canvas export failed:", e);
+                    resolve(null);
+                }
+            };
+
+            if (!img.complete) {
+                img.onload = convert;
+                img.onerror = () => resolve(null);
+            } else {
+                convert();
+            }
+        });
+    }
+""", element_handle)
+                        if base64_data and base64_data.startswith("data:image/png;base64,"):
                             try:
-                                # Strip headers and parse the original binary stream cleanly
-                                img_bytes = base64.b64decode(base64_data.split("base64,")[1])
+                                img_bytes = base64.b64decode(
+                                    base64_data.split(",", 1)[1]
+                                )
+
+                                file_path = os.path.abspath(
+                                    os.path.join(
+                                        output_dir,
+                                        f"hdimage_{uuid.uuid4()}_{idx}.png"
+                                    )
+                                )
+
                                 with open(file_path, "wb") as img_file:
                                     img_file.write(img_bytes)
-                                
-                                print(f"[SUCCESS] High-Res Original HD Image Saved (No Borders/Perfect Zoom): {file_path}")
+
+                                print(f"[SUCCESS] HD image saved: {file_path}")
+
                                 image_map[idx] = file_path
-                                continue  # Skip screenshot step completely as file was correctly caught
-                            except Exception as parse_error:
-                                print(f"[WARNING] Local data parsing failed: {parse_error}")
+                                continue
+
+                            except Exception as e:
+                                print(f"[WARNING] PNG decode/save failed: {e}")
+                        # if base64_data and "base64," in base64_data:
+                        #     file_path = os.path.abspath(os.path.join(output_dir, f"hdimage_{uuid.uuid4()}_{idx}.png"))
+                        #     try:
+                        #         # Strip headers and parse the original binary stream cleanly
+                        #         img_bytes = base64.b64decode(base64_data.split("base64,")[1])
+                        #         with open(file_path, "wb") as img_file:
+                        #             img_file.write(img_bytes)
+                                
+                        #         print(f"[SUCCESS] High-Res Original HD Image Saved (No Borders/Perfect Zoom): {file_path}")
+                        #         image_map[idx] = file_path
+                        #         continue  # Skip screenshot step completely as file was correctly caught
+                        #     except Exception as parse_error:
+                        #         print(f"[WARNING] Local data parsing failed: {parse_error}")
         
                         # B-PLAN: Precise element isolation crop if base64 export fails
                         print("[INFO] Canvas retrieval failed. Running strict localized layout isolate screenshot...")
