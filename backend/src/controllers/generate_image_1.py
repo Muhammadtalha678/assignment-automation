@@ -197,30 +197,6 @@ async def generate_image_via_advanced_web(json_data_str:str,auth_file:str):
                         element_handle = await image_node.element_handle()
                         
                         # Bypassing the 403 network barrier by pulling raw cross-origin binary definitions using JavaScript
-                        # base64_data = await page.evaluate("""
-                        #     async (img) => {
-                        #         return new Promise((resolve) => {
-                        #             if (!img.complete) {
-                        #                 img.onload = () => convert();
-                        #             } else {
-                        #                 convert();
-                        #             }
-                        #             function convert() {
-                        #                 try {
-                        #                     const canvas = document.createElement('canvas');
-                        #                     canvas.width = img.naturalWidth;
-                        #                     canvas.height = img.naturalHeight;
-                        #                     const ctx = canvas.getContext('2d');
-                        #                     ctx.drawImage(img, 0, 0);
-                        #                     resolve(canvas.toDataURL('image/png'));
-                        #                 } catch (e) {
-                        #                     resolve(null);
-                        #                 }
-                        #             }
-                        #         });
-                        #     }
-                        # """, element_handle)
-                                                # Bypassing the 403 network barrier with targeted color transparent filter pipeline
                         base64_data = await page.evaluate("""
                             async (img) => {
                                 return new Promise((resolve) => {
@@ -235,29 +211,7 @@ async def generate_image_via_advanced_web(json_data_str:str,auth_file:str):
                                             canvas.width = img.naturalWidth;
                                             canvas.height = img.naturalHeight;
                                             const ctx = canvas.getContext('2d');
-                                            
-                                            // 1. Initial layer composition draw
                                             ctx.drawImage(img, 0, 0);
-                                            
-                                            // 2. Fetching pixel definitions
-                                            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                                            const data = imgData.data;
-                                            
-                                            // 3. Smart RGB Tolerance Loop for light blue / off-white values
-                                            for (let i = 0; i < data.length; i += 4) {
-                                                const r = data[i];     // Red
-                                                const g = data[i + 1]; // Green
-                                                const b = data[i + 2]; // Blue
-                                                
-                                                // 🚀 RANGE FILTER: Flowchart ke pichhe ka halka blue/greyish data pakadne ke liye.
-                                                // Is range ke andar aane wale saare static backgrounds 100% translucent ho jayenge.
-                                                if (r >= 235 && g >= 240 && b >= 240) {
-                                                    data[i + 3] = 0; // Set alpha channel to 0 (Fully Transparent)
-                                                }
-                                            }
-                                            
-                                            // 4. Repopulate processed canvas pixels map
-                                            ctx.putImageData(imgData, 0, 0);
                                             resolve(canvas.toDataURL('image/png'));
                                         } catch (e) {
                                             resolve(null);
@@ -266,6 +220,52 @@ async def generate_image_via_advanced_web(json_data_str:str,auth_file:str):
                                 });
                             }
                         """, element_handle)
+                                                # Bypassing the 403 network barrier with targeted color transparent filter pipeline
+                        # base64_data = await page.evaluate("""
+                        #     async (img) => {
+                        #         return new Promise((resolve) => {
+                        #             if (!img.complete) {
+                        #                 img.onload = () => convert();
+                        #             } else {
+                        #                 convert();
+                        #             }
+                        #             function convert() {
+                        #                 try {
+                        #                     const canvas = document.createElement('canvas');
+                        #                     canvas.width = img.naturalWidth;
+                        #                     canvas.height = img.naturalHeight;
+                        #                     const ctx = canvas.getContext('2d');
+                                            
+                        #                     // 1. Initial layer composition draw
+                        #                     ctx.drawImage(img, 0, 0);
+                                            
+                        #                     // 2. Fetching pixel definitions
+                        #                     const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        #                     const data = imgData.data;
+                                            
+                        #                     // 3. Smart RGB Tolerance Loop for light blue / off-white values
+                        #                     for (let i = 0; i < data.length; i += 4) {
+                        #                         const r = data[i];     // Red
+                        #                         const g = data[i + 1]; // Green
+                        #                         const b = data[i + 2]; // Blue
+                                                
+                        #                         // 🚀 RANGE FILTER: Flowchart ke pichhe ka halka blue/greyish data pakadne ke liye.
+                        #                         // Is range ke andar aane wale saare static backgrounds 100% translucent ho jayenge.
+                        #                         if (r >= 235 && g >= 240 && b >= 240) {
+                        #                             data[i + 3] = 0; // Set alpha channel to 0 (Fully Transparent)
+                        #                         }
+                        #                     }
+                                            
+                        #                     // 4. Repopulate processed canvas pixels map
+                        #                     ctx.putImageData(imgData, 0, 0);
+                        #                     resolve(canvas.toDataURL('image/png'));
+                        #                 } catch (e) {
+                        #                     resolve(null);
+                        #                 }
+                        #             }
+                        #         });
+                        #     }
+                        # """, element_handle)
 
         
                         if base64_data and "base64," in base64_data:
