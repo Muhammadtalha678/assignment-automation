@@ -86,8 +86,8 @@ export default function App() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   
 
-  const API_ENDPOINT = 'http://127.0.0.1:8000/api/chat';
-  // const API_ENDPOINT = '/api/chat';
+  // const API_ENDPOINT = 'http://127.0.0.1:8000/api/chat';
+  const API_ENDPOINT = '/api/chat';
   // Strict Regex Patterns
   const URDU_REGEX = /^[\u0600-\u06FF\s0-9?؟]+$/;
   // const ENGLISH_REGEX = /^[A-Za-z0-9\s.,?!'"()-]+$/;
@@ -453,7 +453,7 @@ export default function App() {
 
             <a 
               href="/extension.zip" 
-              download="AssignGen_Driver.zip" 
+              // download="AssignGen_Driver.zip" 
               className="px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md transition-transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer self-end md:self-auto w-full md:w-auto"
             >
               <span>Download Driver</span>
