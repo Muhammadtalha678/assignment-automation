@@ -10,7 +10,7 @@ router = APIRouter(prefix="/api")
 @router.post("/chat")
 async def chat(request:Request,backgroundTask:BackgroundTasks,chatData:ChatDataModal = Depends(upload_images_and_get_chat_data)):
     agent_config = request.app.state.agent_config
-    print(chatData)
+    # print(chatData)
     # ab hm yhn sy cookies ki file bnayn gy hr user ki uuid sy
 
     auth_filename = f"{chatData.user_uuid}_auth_state.json"

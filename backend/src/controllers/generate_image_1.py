@@ -197,100 +197,43 @@ async def generate_image_via_advanced_web(json_data_str:str,auth_file:str):
                         element_handle = await image_node.element_handle()
                         
                         # Bypassing the 403 network barrier by pulling raw cross-origin binary definitions using JavaScript
-                        # base64_data = await page.evaluate("""
-                        #     async (img) => {
-                        #         return new Promise((resolve) => {
-                                    
-                        #             if (!img.complete) {
-                        #                 img.onload = () => convert();
-                        #             } else {
-                        #                 convert();
-                        #             }
-                        #             function convert() {
-                        #                 try {
-                        #                     const canvas = document.createElement('canvas');
-                        #                     canvas.width = img.naturalWidth;
-                        #                     canvas.height = img.naturalHeight;
-                        #                     const ctx = canvas.getContext('2d');
-                        #                     ctx.drawImage(img, 0, 0);
-                        #                     resolve(canvas.toDataURL('image/png'));
-                        #                 } catch (e) {
-                        #                     resolve(null);
-                        #                 }
-                        #             }
-                        #         });
-                        #     }
-                        # """, element_handle)
-
                         base64_data = await page.evaluate("""
-    async (img) => {
-        return new Promise((resolve) => {
-
-            const convert = () => {
-                try {
-                    const canvas = document.createElement('canvas');
-
-                    canvas.width = img.naturalWidth;
-                    canvas.height = img.naturalHeight;
-
-                    const ctx = canvas.getContext('2d', {
-                        willReadFrequently: true
-                    });
-
-                    ctx.drawImage(img, 0, 0);
-
-                    resolve(canvas.toDataURL('image/png'));
-                } catch (e) {
-                    console.error("Canvas export failed:", e);
-                    resolve(null);
-                }
-            };
-
-            if (!img.complete) {
-                img.onload = convert;
-                img.onerror = () => resolve(null);
-            } else {
-                convert();
-            }
-        });
-    }
-""", element_handle)
-                        if base64_data and base64_data.startswith("data:image/png;base64,"):
+                            async (img) => {
+                                return new Promise((resolve) => {
+                                    if (!img.complete) {
+                                        img.onload = () => convert();
+                                    } else {
+                                        convert();
+                                    }
+                                    function convert() {
+                                        try {
+                                            const canvas = document.createElement('canvas');
+                                            canvas.width = img.naturalWidth;
+                                            canvas.height = img.naturalHeight;
+                                            const ctx = canvas.getContext('2d');
+                                            ctx.drawImage(img, 0, 0);
+                                            resolve(canvas.toDataURL('image/png'));
+                                        } catch (e) {
+                                            resolve(null);
+                                        }
+                                    }
+                                });
+                            }
+                        """, element_handle)
+        
+                        if base64_data and "base64," in base64_data:
+                            file_path = os.path.abspath(os.path.join(output_dir, f"hdimage_{uuid.uuid4()}_{idx}.png"))
                             try:
-                                img_bytes = base64.b64decode(
-                                    base64_data.split(",", 1)[1]
-                                )
-
-                                file_path = os.path.abspath(
-                                    os.path.join(
-                                        output_dir,
-                                        f"hdimage_{uuid.uuid4()}_{idx}.png"
-                                    )
-                                )
-
+                                # Strip headers and parse the original binary stream cleanly
+                                img_bytes = base64.b64decode(base64_data.split("base64,")[1])
                                 with open(file_path, "wb") as img_file:
                                     img_file.write(img_bytes)
-
-                                print(f"[SUCCESS] HD image saved: {file_path}")
-
-                                image_map[idx] = file_path
-                                continue
-
-                            except Exception as e:
-                                print(f"[WARNING] PNG decode/save failed: {e}")
-                        # if base64_data and "base64," in base64_data:
-                        #     file_path = os.path.abspath(os.path.join(output_dir, f"hdimage_{uuid.uuid4()}_{idx}.png"))
-                        #     try:
-                        #         # Strip headers and parse the original binary stream cleanly
-                        #         img_bytes = base64.b64decode(base64_data.split("base64,")[1])
-                        #         with open(file_path, "wb") as img_file:
-                        #             img_file.write(img_bytes)
                                 
-                        #         print(f"[SUCCESS] High-Res Original HD Image Saved (No Borders/Perfect Zoom): {file_path}")
-                        #         image_map[idx] = file_path
-                        #         continue  # Skip screenshot step completely as file was correctly caught
-                        #     except Exception as parse_error:
-                        #         print(f"[WARNING] Local data parsing failed: {parse_error}")
+                                print(f"[SUCCESS] High-Res Original HD Image Saved (No Borders/Perfect Zoom): {file_path}")
+                                image_map[idx] = file_path
+                                continue  # Skip screenshot step completely as file was correctly caught
+                            except Exception as parse_error:
+                                print(f"[WARNING] Local data parsing failed: {parse_error}")
         
                         # B-PLAN: Precise element isolation crop if base64 export fails
                         print("[INFO] Canvas retrieval failed. Running strict localized layout isolate screenshot...")
