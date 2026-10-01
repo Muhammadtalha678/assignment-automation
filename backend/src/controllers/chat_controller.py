@@ -102,14 +102,14 @@ async def chat_controller(chat_data:data,backgroundTask:BackgroundTasks,agent_co
             # ]
             handoffs=[content_agent]
         )
-        # result = await Runner.run(
-        #     input=json_data,
-        #     starting_agent=orchistrator_agent,
-        #     run_config=agent_config.config(),
+        result = await Runner.run(
+            input=json_data,
+            starting_agent=orchistrator_agent,
+            run_config=agent_config.config(),
 
-        # )
-        # agent_raw_output = result.final_output
-        agent_raw_output = f
+        )
+        agent_raw_output = result.final_output
+        # agent_raw_output = f
         if (isinstance(agent_raw_output,str)):
             dict_content = json.loads(agent_raw_output)
         else:
