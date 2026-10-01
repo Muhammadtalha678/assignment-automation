@@ -3,9 +3,9 @@ from fastapi import BackgroundTasks, HTTPException
 import os
 import json
 from fastapi.responses import FileResponse
-from agents import Runner,Agent,set_tracing_export_api_key
+from agents import Runner,Agent,set_tracing_export_api_key,handoff,RunContextWrapper
 from src.controllers.docs_generator import generate_assignment_docx
-from src.models.pydantic_model import data
+from src.models.pydantic_model import data,AssignmentPayload
 from src.agents.content_agent import content_agent
 from src.configs.env_config import OPENAI_API_KEY
 from src.controllers.generate_image_1 import generate_image_via_advanced_web
@@ -41,14 +41,17 @@ def remove_temp_file(doc_path: str,logo_path:str,image_map:str,cookie_file:str):
     except Exception as e:
         print(f"Warning: Could not clear image directory: {e}")
         
-
+def on_handoff(ctx:RunContextWrapper[None],input_data:AssignmentPayload):
+        print(f"Content Agent called with values: {input_data}")
+ 
 async def chat_controller(chat_data:data,backgroundTask:BackgroundTasks,agent_config,cookies_path:str):
     try:
         set_tracing_export_api_key(OPENAI_API_KEY)
 
         # remove logo_path and convert to str
         registration_id = chat_data.registration_id
-        json_data = chat_data.model_dump_json(exclude={"logo_path","injected_cookies","user_uuid"})
+        # json_data = chat_data.model_dump_json(exclude={"logo_path","injected_cookies","user_uuid"})
+        json_data = AssignmentPayload(**chat_data.model_dump()).model_dump_json()
         print("send json data to agent",json_data)
         orchistrator_agent = Agent(
             name="orchistrator agent",
@@ -90,16 +93,23 @@ async def chat_controller(chat_data:data,backgroundTask:BackgroundTasks,agent_co
 
             When everything is complete don't ask confirmation questions just handoff to the Content Agent.
             """,
+            # handoffs=[
+            #     handoff(
+            #         agent=content_agent,
+            #         on_handoff= on_handoff,
+            #         input_type= AssignmentPayload
+            #     )
+            # ]
             handoffs=[content_agent]
         )
-        result = await Runner.run(
-            input=json_data,
-            starting_agent=orchistrator_agent,
-            run_config=agent_config.config(),
+        # result = await Runner.run(
+        #     input=json_data,
+        #     starting_agent=orchistrator_agent,
+        #     run_config=agent_config.config(),
 
-        )
-        agent_raw_output = result.final_output
-        # agent_raw_output = f
+        # )
+        # agent_raw_output = result.final_output
+        agent_raw_output = f
         if (isinstance(agent_raw_output,str)):
             dict_content = json.loads(agent_raw_output)
         else:

@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 from typing import Dict, List, Optional
-class data(BaseModel):
-    user_uuid:str #Frontend se aayi hui unique tab session ID
+class AssignmentPayload(BaseModel):
     assignment_no:int
     course_code:int
     semester:str
@@ -9,8 +8,11 @@ class data(BaseModel):
     registration_id:str
     questions:list[str]
     language:str
+
+class data(AssignmentPayload):
+    user_uuid:Optional[str] = None #Frontend se aayi hui unique tab session ID
     logo_path:Optional[str] = None #bd ma hm add krain gy path is liye optional none
-    injected_cookies: List[Dict]
+    injected_cookies: Optional[List[Dict]] = None
     
 class Diagram(BaseModel):
     title: str

@@ -250,8 +250,8 @@ async def generate_image_via_advanced_web(json_data_str:str,auth_file:str):
                         
          # UPDATED: LOOP KHATAM HONE KE BAAD AUR CONTEXT CLOSE HONE SE PEHLE
         # Yeh line har dafa latest/refreshed cookies ko json file mein overwrite kar degi
-        print("Updating auth_state.json with refreshed cookies/session...")
-        await context.storage_state(path=auth_file)
+        # print("Updating auth_state.json with refreshed cookies/session...")
+        # await context.storage_state(path=auth_file)
                          
         await context.close()
         print(image_map)
